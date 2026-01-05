@@ -1105,35 +1105,74 @@ async function renderTimesheetForm(existingDraft) {
       const dateTd = document.createElement('td');
       dateTd.textContent = `${wdShort} (${dtShort})`;
 
-      const createTimeInput = (name) => {
+      const createTimeInput = (name, placeholderText) => {
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'relative';
+          wrapper.style.width = '100%';
+          
           const input = document.createElement('input');
           input.type = 'time';
           input.name = name;
           input.value = draftData[name] || '';
-          input.addEventListener('input', saveTimesheetDraft);
-          return input;
+          input.style.width = '100%';
+          
+          // Create placeholder label
+          const placeholder = document.createElement('span');
+          placeholder.className = 'time-placeholder';
+          placeholder.textContent = placeholderText;
+          placeholder.style.position = 'absolute';
+          placeholder.style.left = '50%';
+          placeholder.style.transform = 'translateX(-50%)';
+          placeholder.style.color = '#999';
+          placeholder.style.pointerEvents = 'none';
+          placeholder.style.display = input.value ? 'none' : 'block';
+          
+          // Show/hide placeholder based on input value
+          const updatePlaceholder = () => {
+            placeholder.style.display = input.value ? 'none' : 'block';
+          };
+          
+          input.addEventListener('input', () => {
+            saveTimesheetDraft();
+            updatePlaceholder();
+          });
+          
+          input.addEventListener('focus', () => {
+            placeholder.style.display = 'none';
+          });
+          
+          input.addEventListener('blur', updatePlaceholder);
+          
+          wrapper.appendChild(input);
+          wrapper.appendChild(placeholder);
+          
+          return wrapper;
       };
 
       // Start/End time cells
 const st1Td = document.createElement('td');
 st1Td.setAttribute('data-label', 'Start Time');
-const st1Input = createTimeInput('start1');
-st1Td.appendChild(st1Input);
+const st1Wrapper = createTimeInput('start1', 'Start Time');
+st1Td.appendChild(st1Wrapper);
+const st1Input = st1Wrapper.querySelector('input[name="start1"]');
 
 const et1Td = document.createElement('td');
 et1Td.setAttribute('data-label', 'End Time');
-const et1Input = createTimeInput('end1');
-et1Td.appendChild(et1Input);
+const et1Wrapper = createTimeInput('end1', 'End Time');
+et1Td.appendChild(et1Wrapper);
+const et1Input = et1Wrapper.querySelector('input[name="end1"]');
 
 const st2Td = document.createElement('td');
 st2Td.setAttribute('data-label', 'Start Time');
-const st2Input = createTimeInput('start2');
-st2Td.appendChild(st2Input);
+const st2Wrapper = createTimeInput('start2', 'Start Time');
+st2Td.appendChild(st2Wrapper);
+const st2Input = st2Wrapper.querySelector('input[name="start2"]');
 
 const et2Td = document.createElement('td');
 et2Td.setAttribute('data-label', 'End Time');
-const et2Input = createTimeInput('end2');
-et2Td.appendChild(et2Input);
+const et2Wrapper = createTimeInput('end2', 'End Time');
+et2Td.appendChild(et2Wrapper);
+const et2Input = et2Wrapper.querySelector('input[name="end2"]');
 
       // On Call Hours cell
       const onCallTd = document.createElement('td');
@@ -1294,12 +1333,14 @@ et2Td.appendChild(et2Input);
       commentInput.type = 'text';
       commentInput.name = 'comment';
       commentInput.value = draftData.comment || '';
+      commentInput.placeholder = 'Comments';
       commentInput.addEventListener('input', saveTimesheetDraft);
 
       const jobTd = document.createElement('td');
       jobTd.appendChild(jobSelect);
       
       const commentTd = document.createElement('td');
+      commentTd.setAttribute('data-label', 'Comment:');
       commentTd.appendChild(commentInput);
 
       // Function to log and calculate total hours (hidden from UI but logged for debugging)

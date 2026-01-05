@@ -488,6 +488,11 @@
       cursor: pointer;
     }
 
+    /* Hide time placeholders by default (desktop) */
+    .time-placeholder {
+      display: none;
+    }
+
 
 
 
@@ -590,6 +595,33 @@
         display: none;
       }
 
+      /* Hide labels for Start Time, End Time, and Comment fields in mobile */
+      table td[data-label="Start Time"]:before,
+      table td[data-label="End Time"]:before,
+      table td[data-label="Comment:"]:before {
+        display: none;
+      }
+
+      /* Make time and comment inputs full width and centered in mobile */
+      table td[data-label="Start Time"],
+      table td[data-label="End Time"],
+      table td[data-label="Comment:"] {
+        padding-left: 0.4rem;
+        text-align: center;
+      }
+
+      table td[data-label="Start Time"] input[type="time"],
+      table td[data-label="End Time"] input[type="time"],
+      table td[data-label="Comment:"] input[type="text"] {
+        width: 100%;
+        max-width: 100%;
+      }
+
+      /* Show placeholder labels in mobile mode (already inside mobile media query) */
+      .time-placeholder {
+        display: block;
+      }
+
 
 
 
@@ -678,7 +710,7 @@
           <button id="cancel-timesheet-btn">Cancel</button>
         </div>
       </div>
-      
+      <br>
       <h3>Past Timesheets</h3>
       <div id="past-timesheets"></div>
       <div class="logout-btn-container">
