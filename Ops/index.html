@@ -19,9 +19,54 @@
     .modal-show { display: flex !important; }
     .safe-pad { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
     .tap { -webkit-tap-highlight-color: transparent; }
+    .content-hidden { display: none !important; }
   </style>
 </head>
 <body class="min-h-screen text-slate-800 dark:text-slate-100 tap">
+  <!-- Password Protection Modal -->
+  <div id="passwordModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="relative w-full sm:max-w-md sm:rounded-3xl sm:shadow-xl sm:ring-1 sm:ring-black/10
+                bg-white dark:bg-slate-900 rounded-t-3xl p-6 mx-4">
+      <div class="text-center mb-6">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 dark:bg-indigo-900/20 mb-4">
+          <svg class="h-8 w-8 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <h3 class="text-2xl font-semibold text-slate-900 dark:text-slate-100 mb-2">
+          Password Required
+        </h3>
+        <p class="text-sm text-slate-600 dark:text-slate-400">
+          Please enter the password to access this page
+        </p>
+      </div>
+
+      <form id="passwordForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            Password:
+          </label>
+          <input type="password" id="passwordInput" required autofocus
+                 class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 
+                        bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 
+                        focus:ring-indigo-500 focus:border-transparent"
+                 placeholder="Enter password" />
+        </div>
+        
+        <div id="passwordError" class="text-sm text-rose-600 dark:text-rose-400 hidden">
+          Incorrect password. Please try again.
+        </div>
+        
+        <button type="submit" id="passwordSubmitBtn"
+                class="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-white font-semibold shadow hover:bg-indigo-500 active:scale-[0.99] disabled:opacity-60">
+          Access Site
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Content (hidden until authenticated) -->
+  <div id="mainContent" class="content-hidden">
   <div class="mx-auto max-w-4xl px-4 pt-6 pb-24 safe-pad">
     <!-- Community Selection Screen -->
     <div id="communitySelection" class="min-h-screen flex flex-col items-center justify-center">
@@ -584,6 +629,7 @@
       </form>
     </div>
   </div>
+  </div> <!-- End mainContent -->
 
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
@@ -2731,6 +2777,90 @@
 
      // Initialize with community selection screen
      // No need to populate selects until a community is selected
+
+    // ----- Password Protection -----
+    const PASSWORD = "@lc$0114";
+    const COOKIE_NAME = "ops_auth";
+    const COOKIE_EXPIRY_DAYS = 30;
+
+    // Cookie helper functions
+    function setCookie(name, value, days) {
+      const date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      const expires = "expires=" + date.toUTCString();
+      document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(';');
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    function checkAuthentication() {
+      const authCookie = getCookie(COOKIE_NAME);
+      if (authCookie === "authenticated") {
+        // User is authenticated, show content and hide modal
+        document.getElementById("passwordModal").classList.add("hidden");
+        document.getElementById("mainContent").classList.remove("content-hidden");
+        return true;
+      }
+      return false;
+    }
+
+    function authenticate() {
+      // Set cookie for 30 days
+      setCookie(COOKIE_NAME, "authenticated", COOKIE_EXPIRY_DAYS);
+      // Hide modal and show content
+      document.getElementById("passwordModal").classList.add("hidden");
+      document.getElementById("mainContent").classList.remove("content-hidden");
+    }
+
+    // Check authentication on page load
+    if (!checkAuthentication()) {
+      // Show password modal
+      document.getElementById("passwordModal").classList.remove("hidden");
+      document.getElementById("mainContent").classList.add("content-hidden");
+    }
+
+    // Handle password form submission
+    const passwordForm = document.getElementById("passwordForm");
+    const passwordInput = document.getElementById("passwordInput");
+    const passwordError = document.getElementById("passwordError");
+    const passwordSubmitBtn = document.getElementById("passwordSubmitBtn");
+
+    passwordForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      passwordError.classList.add("hidden");
+      passwordSubmitBtn.disabled = true;
+      passwordSubmitBtn.textContent = "Checking...";
+
+      const enteredPassword = passwordInput.value.trim();
+
+      if (enteredPassword === PASSWORD) {
+        // Correct password
+        authenticate();
+      } else {
+        // Incorrect password
+        passwordError.classList.remove("hidden");
+        passwordInput.value = "";
+        passwordInput.focus();
+        passwordSubmitBtn.disabled = false;
+        passwordSubmitBtn.textContent = "Access Site";
+      }
+    });
+
+    // Allow Enter key to submit
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        passwordForm.dispatchEvent(new Event("submit"));
+      }
+    });
   </script>
 </body>
 </html>
