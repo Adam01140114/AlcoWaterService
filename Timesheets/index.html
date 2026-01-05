@@ -572,17 +572,20 @@
         font-size: 0.85rem;
         padding: 0.5rem;
       }
-      /* centre “Add On Call” no matter what */
+      /* centre "Add On Call" no matter what */
       .add-on-call-btn{
         display:block;
         margin:0.5rem auto;
-        margin-left: 67px;
-        
-        width:auto;
+        width: calc(100% - 0.8rem);
+        max-width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        word-wrap: break-word;
       }
 
       .add-on-call-btn.is-cancel {
-        margin-left: 115px;
+        width: calc(100% - 0.8rem);
+        max-width: 100%;
       }
 
       .on-call-inputs-mobile {
@@ -608,7 +611,8 @@
       /* Make time and comment inputs full width and centered in mobile */
       table td[data-label="Start Time"],
       table td[data-label="End Time"],
-      table td[data-label="Comment:"] {
+      table td[data-label="Comment:"],
+      table td[data-label="On Call Hours"] {
         padding-left: 0.4rem;
         padding-right: 0.4rem;
         text-align: center;
