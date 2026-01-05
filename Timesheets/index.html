@@ -617,7 +617,12 @@
       }
 
       table td[data-label="Start Time"] input[type="time"],
-      table td[data-label="End Time"] input[type="time"],
+      table td[data-label="End Time"] input[type="time"] {
+        width: 50%;
+        max-width: 50%;
+        text-align: center;
+        box-sizing: border-box;
+      }
       table td[data-label="Comment:"] input[type="text"] {
         width: 100%;
         max-width: 100%;
@@ -640,9 +645,10 @@
       .time-input-wrapper {
         position: relative;
         display: block;
-        width: 100%;
-        max-width: 100%;
+        width: 50%;
+        max-width: 50%;
         box-sizing: border-box;
+        margin: 0 auto;
       }
 
       .time-input-wrapper .time-placeholder {
