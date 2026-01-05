@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCADA Ticketing System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SCADA Ticketing System</h1>
+        </div>
+
+<div id="secret" style="display: none;">
+<!-- Ticket Submission Form -->
+            <div class="card">
+                <h2>Submit a SCADA Ticket</h2>
+                <div class="form-group">
+                    <input type="text" id="ticketTitle" placeholder="Ticket Location" required>
+                </div>
+                <div class="form-group">
+                    <textarea id="ticketDesc" placeholder="Description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <select id="ticketRequester" required>
+                        <option value="" disabled selected>Requested By:</option>
+                    </select>
+                </div>
+                <div class="form-group">
+        <select id="ticketPriority">
+                        <option value="Low">Low Priority</option>
+                        <option value="Medium">Medium Priority</option>
+                        <option value="High">High Priority</option>
+                    </select>
+    </div>
+                <button onclick="submitTicket()" class="btn">Submit Ticket</button>
+</div>
+
+            <!-- Open Tickets -->
+            <div class="card">
+                <h2>Open Tickets</h2>
+                <div id="openTicketsList" class="tickets-container"></div>
+</div>
+
+<!-- Pending Tickets -->
+            <div class="card">
+                <h2>Pending Tickets</h2>
+                <div class="filter-section">
+                    <label for="sortFilter">Filter by assignee:</label>
+<select id="sortFilter" onchange="loadTickets()">
+                        <option value="all">All</option>
+</select>
+</div>
+                <div id="pendingTicketsList" class="tickets-container"></div>
+</div>
+	
+            <!-- Member Management -->
+            <div class="card">
+    <h2>Manage Members</h2>
+                <div id="allmembers"></div>
+                
+                <div class="form-group">
+                    <h3>Add/Remove Team Members</h3>
+                    <button onclick="addMember()" class="btn">Add New Member</button>
+		</div>
+	
+                <div class="form-group">
+                    <select id="memberSelect">
+                        <option value="">Select member to delete</option>
+                    </select>
+                    <button onclick="deleteMember()" class="btn btn-danger">Delete Member</button>
+	</div>
+    </div>
+	
+            <!-- Deleted Tickets -->
+            <div id="deletedTicketsContainer" class="card" style="display: none;">
+    <h2>Recently Deleted Tickets</h2>
+    <div id="deletedTicketsList" class="tickets-container"></div>
+</div>
+</div>
+	</div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
