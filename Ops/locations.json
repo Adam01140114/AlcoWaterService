@@ -1,0 +1,54 @@
+{
+  "locations": [
+    {
+      "id": "LOC-001",
+      "address": "123 Main Street, Sacramento, CA 95814",
+      "propertyType": "Single Family Home",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFootage": 1800,
+      "currentResident": null,
+      "status": "available"
+    },
+    {
+      "id": "LOC-002", 
+      "address": "456 Oak Avenue, Sacramento, CA 95816",
+      "propertyType": "Single Family Home",
+      "bedrooms": 4,
+      "bathrooms": 3,
+      "squareFootage": 2200,
+      "currentResident": null,
+      "status": "available"
+    },
+    {
+      "id": "LOC-003",
+      "address": "789 Pine Street, Sacramento, CA 95818", 
+      "propertyType": "Single Family Home",
+      "bedrooms": 2,
+      "bathrooms": 2,
+      "squareFootage": 1500,
+      "currentResident": null,
+      "status": "available"
+    },
+    {
+      "id": "LOC-004",
+      "address": "321 Elm Drive, Sacramento, CA 95820",
+      "propertyType": "Townhouse",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFootage": 1600,
+      "currentResident": null,
+      "status": "available"
+    },
+    {
+      "id": "LOC-005",
+      "address": "654 Maple Lane, Sacramento, CA 95822",
+      "propertyType": "Single Family Home", 
+      "bedrooms": 5,
+      "bathrooms": 3,
+      "squareFootage": 2800,
+      "currentResident": null,
+      "status": "available"
+    }
+  ]
+}

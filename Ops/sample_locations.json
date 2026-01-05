@@ -1,0 +1,114 @@
+{
+  "locations": [
+    {
+      "id": "LOC-001",
+      "address": "123 Oak Street, Sacramento, CA 95814",
+      "street": "123 Oak Street",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95814",
+      "ownerFirstName": "John",
+      "ownerLastName": "Smith",
+      "ownerFullName": "John Smith"
+    },
+    {
+      "id": "LOC-002",
+      "address": "456 Pine Avenue, Sacramento, CA 95816",
+      "street": "456 Pine Avenue",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95816",
+      "ownerFirstName": "Sarah",
+      "ownerLastName": "Johnson",
+      "ownerFullName": "Sarah Johnson"
+    },
+    {
+      "id": "LOC-003",
+      "address": "789 Maple Drive, Sacramento, CA 95818",
+      "street": "789 Maple Drive",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95818",
+      "ownerFirstName": "Michael",
+      "ownerLastName": "Davis",
+      "ownerFullName": "Michael Davis"
+    },
+    {
+      "id": "LOC-004",
+      "address": "321 Elm Lane, Sacramento, CA 95820",
+      "street": "321 Elm Lane",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95820",
+      "ownerFirstName": "Emily",
+      "ownerLastName": "Wilson",
+      "ownerFullName": "Emily Wilson"
+    },
+    {
+      "id": "LOC-005",
+      "address": "654 Cedar Court, Sacramento, CA 95822",
+      "street": "654 Cedar Court",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95822",
+      "ownerFirstName": "Robert",
+      "ownerLastName": "Brown",
+      "ownerFullName": "Robert Brown"
+    },
+    {
+      "id": "LOC-006",
+      "address": "987 Birch Boulevard, Sacramento, CA 95824",
+      "street": "987 Birch Boulevard",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95824",
+      "ownerFirstName": "Lisa",
+      "ownerLastName": "Garcia",
+      "ownerFullName": "Lisa Garcia"
+    },
+    {
+      "id": "LOC-007",
+      "address": "147 Willow Way, Sacramento, CA 95826",
+      "street": "147 Willow Way",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95826",
+      "ownerFirstName": "David",
+      "ownerLastName": "Martinez",
+      "ownerFullName": "David Martinez"
+    },
+    {
+      "id": "LOC-008",
+      "address": "258 Spruce Street, Sacramento, CA 95828",
+      "street": "258 Spruce Street",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95828",
+      "ownerFirstName": "Jennifer",
+      "ownerLastName": "Anderson",
+      "ownerFullName": "Jennifer Anderson"
+    },
+    {
+      "id": "LOC-009",
+      "address": "369 Ash Avenue, Sacramento, CA 95830",
+      "street": "369 Ash Avenue",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95830",
+      "ownerFirstName": "Christopher",
+      "ownerLastName": "Taylor",
+      "ownerFullName": "Christopher Taylor"
+    },
+    {
+      "id": "LOC-010",
+      "address": "741 Poplar Place, Sacramento, CA 95832",
+      "street": "741 Poplar Place",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95832",
+      "ownerFirstName": "Amanda",
+      "ownerLastName": "Thomas",
+      "ownerFullName": "Amanda Thomas"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+[
+  {
+    "name": "County",
+    "lot": "1",
+    "owner": "County Water District",
+    "address": "Main County Location",
+    "meterNumber": "CTY-001",
+    "lastRead": "1.13",
+    "unit": "gallons"
+  },
+  {
+    "name": "Kilbreth",
+    "lot": "2", 
+    "owner": "Kilbreth Properties",
+    "address": "Kilbreth Station",
+    "meterNumber": "KIL-002",
+    "lastRead": "0.84",
+    "unit": "gallons"
+  },
+  {
+    "name": "Hemingway",
+    "lot": "3",
+    "owner": "Hemingway Corp",
+    "address": "Hemingway Facility",
+    "meterNumber": "HEM-003", 
+    "lastRead": "1.03",
+    "unit": "gallons"
+  },
+  {
+    "name": "1st Avenue",
+    "lot": "4",
+    "owner": "1st Avenue LLC",
+    "address": "1st Avenue Location",
+    "meterNumber": "1ST-004",
+    "lastRead": "1.22", 
+    "unit": "gallons"
+  },
+  {
+    "name": "DSS across from 21885 Rosehart Way",
+    "lot": "5",
+    "owner": "DSS Corporation",
+    "address": "DSS Facility across from 21885 Rosehart Way",
+    "meterNumber": "DSS-005",
+    "lastRead": "0.72",
+    "unit": "gallons"
+  }
+]
