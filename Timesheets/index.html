@@ -524,6 +524,7 @@
       table, table tbody, table tr, table td {
         display: block;
         width: 100%;
+        box-sizing: border-box;
       }
       table tr {
         margin-bottom: 1rem;
@@ -535,6 +536,8 @@
         text-align: center;
         border: none;
         border-bottom: 1px solid #eee;
+        box-sizing: border-box;
+        overflow: hidden;
       }
       table td:before {
         content: attr(data-label) " ";
@@ -607,7 +610,10 @@
       table td[data-label="End Time"],
       table td[data-label="Comment:"] {
         padding-left: 0.4rem;
+        padding-right: 0.4rem;
         text-align: center;
+        box-sizing: border-box;
+        overflow: hidden;
       }
 
       table td[data-label="Start Time"] input[type="time"],
@@ -616,6 +622,7 @@
         width: 100%;
         max-width: 100%;
         text-align: center;
+        box-sizing: border-box;
       }
 
       /* Center the placeholder text for comment input */
@@ -632,8 +639,10 @@
       /* Ensure placeholder is visible and properly positioned in mobile */
       .time-input-wrapper {
         position: relative;
-        display: inline-block;
+        display: block;
         width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       .time-input-wrapper .time-placeholder {
@@ -654,6 +663,9 @@
       .time-input-wrapper input[type="time"] {
         position: relative;
         z-index: 1;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
 
       /* When input has value, hide placeholder */
