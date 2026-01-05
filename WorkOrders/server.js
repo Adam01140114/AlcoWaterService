@@ -43,6 +43,8 @@ const REPO_ROOT_DIR = path.join(__dirname, ".."); // /.../src
 
 const PUBLIC_DIR = path.join(WORKORDER_DIR, "public");          // WorkOrder/public
 const TIMESHEETS_DIR = path.join(REPO_ROOT_DIR, "Timesheets");  // repo root Timesheets
+const OPS_DIR = path.join(REPO_ROOT_DIR, "Ops");                // repo root Ops
+const TICKETS_DIR = path.join(REPO_ROOT_DIR, "Tickets");        // repo root Tickets
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -87,6 +89,12 @@ app.get(["/Workorder", "/Workorder/*"], (req, res) => {
 // 2) Timesheets at /Timesheets
 app.use("/Timesheets", express.static(TIMESHEETS_DIR));
 
+// 2b) Ops at /Ops
+app.use("/Ops", express.static(OPS_DIR));
+
+// 2c) Tickets at /Tickets
+app.use("/Tickets", express.static(TICKETS_DIR));
+
 // 3) Landing page at /
 app.get("/", (_req, res) => {
   res.sendFile(path.join(REPO_ROOT_DIR, "index.html"));
@@ -103,6 +111,14 @@ app.get(["/WorkOrders", "/WorkOrders/*"], (_req, res) => {
 
 app.get(["/Timesheets", "/Timesheets/*"], (_req, res) => {
   res.sendFile(path.join(TIMESHEETS_DIR, "index.html"));
+});
+
+app.get(["/Ops", "/Ops/*"], (_req, res) => {
+  res.sendFile(path.join(OPS_DIR, "index.html"));
+});
+
+app.get(["/Tickets", "/Tickets/*"], (_req, res) => {
+  res.sendFile(path.join(TICKETS_DIR, "index.html"));
 });
 
 // ────────────────────────────────────────────────────────────
