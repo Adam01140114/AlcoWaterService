@@ -576,16 +576,20 @@
       .add-on-call-btn{
         display:block;
         margin:0.5rem auto;
-        width: calc(100% - 0.8rem);
-        max-width: 100%;
+        width: 50%;
+        max-width: 50%;
         box-sizing: border-box;
         white-space: normal;
         word-wrap: break-word;
+        text-align: center;
+        transform: translateX(50%);
       }
 
       .add-on-call-btn.is-cancel {
-        width: calc(100% - 0.8rem);
-        max-width: 100%;
+        width: 50%;
+        max-width: 50%;
+        margin: 0.5rem auto;
+        transform: translateX(50%);
       }
 
       .on-call-inputs-mobile {
@@ -601,6 +605,13 @@
         display: none;
       }
 
+      /* Override padding for On Call Hours to center content */
+      table td[data-label="On Call Hours"] {
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        overflow: visible !important;
+      }
+
       /* Hide labels for Start Time, End Time, and Comment fields in mobile */
       table td[data-label="Start Time"]:before,
       table td[data-label="End Time"]:before,
@@ -611,13 +622,25 @@
       /* Make time and comment inputs full width and centered in mobile */
       table td[data-label="Start Time"],
       table td[data-label="End Time"],
-      table td[data-label="Comment:"],
-      table td[data-label="On Call Hours"] {
+      table td[data-label="Comment:"] {
         padding-left: 0.4rem;
         padding-right: 0.4rem;
         text-align: center;
         box-sizing: border-box;
         overflow: hidden;
+      }
+
+      /* Center On Call Hours cell content */
+      table td[data-label="On Call Hours"] {
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        text-align: center;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: visible !important;
       }
 
       table td[data-label="Start Time"] input[type="time"],
