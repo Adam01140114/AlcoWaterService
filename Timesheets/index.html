@@ -619,7 +619,39 @@
 
       /* Show placeholder labels in mobile mode (already inside mobile media query) */
       .time-placeholder {
-        display: block;
+        display: block !important;
+      }
+
+      /* Ensure placeholder is visible and properly positioned in mobile */
+      .time-input-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+      }
+
+      .time-input-wrapper .time-placeholder {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        color: #999;
+        pointer-events: none;
+        white-space: nowrap;
+        font-size: 0.9rem;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0 4px;
+      }
+
+      /* Style time inputs in mobile */
+      .time-input-wrapper input[type="time"] {
+        position: relative;
+        z-index: 1;
+      }
+
+      /* When input has value, hide placeholder */
+      .time-input-wrapper.has-value .time-placeholder {
+        display: none !important;
       }
 
 

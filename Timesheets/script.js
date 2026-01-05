@@ -1107,14 +1107,18 @@ async function renderTimesheetForm(existingDraft) {
 
       const createTimeInput = (name, placeholderText) => {
           const wrapper = document.createElement('div');
+          wrapper.className = 'time-input-wrapper';
           wrapper.style.position = 'relative';
           wrapper.style.width = '100%';
+          wrapper.style.display = 'inline-block';
           
           const input = document.createElement('input');
           input.type = 'time';
           input.name = name;
           input.value = draftData[name] || '';
           input.style.width = '100%';
+          input.style.position = 'relative';
+          input.style.zIndex = '1';
           
           // Create placeholder label
           const placeholder = document.createElement('span');
@@ -1122,14 +1126,24 @@ async function renderTimesheetForm(existingDraft) {
           placeholder.textContent = placeholderText;
           placeholder.style.position = 'absolute';
           placeholder.style.left = '50%';
-          placeholder.style.transform = 'translateX(-50%)';
+          placeholder.style.top = '50%';
+          placeholder.style.transform = 'translate(-50%, -50%)';
           placeholder.style.color = '#999';
           placeholder.style.pointerEvents = 'none';
+          placeholder.style.zIndex = '2';
           placeholder.style.display = input.value ? 'none' : 'block';
+          placeholder.style.fontSize = 'inherit';
+          placeholder.style.fontFamily = 'inherit';
           
           // Show/hide placeholder based on input value
           const updatePlaceholder = () => {
-            placeholder.style.display = input.value ? 'none' : 'block';
+            if (input.value) {
+              wrapper.classList.add('has-value');
+              placeholder.style.display = 'none';
+            } else {
+              wrapper.classList.remove('has-value');
+              placeholder.style.display = 'block';
+            }
           };
           
           input.addEventListener('input', () => {
@@ -1142,6 +1156,9 @@ async function renderTimesheetForm(existingDraft) {
           });
           
           input.addEventListener('blur', updatePlaceholder);
+          
+          // Initial check
+          updatePlaceholder();
           
           wrapper.appendChild(input);
           wrapper.appendChild(placeholder);
