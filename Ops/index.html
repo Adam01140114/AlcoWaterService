@@ -138,6 +138,30 @@
             </div>
           </div>
         </div>
+
+      </div>
+
+      <!-- Scada System Card - Full Width Below -->
+      <div class="mt-6 w-full max-w-4xl">
+        <div class="community-card group cursor-pointer" data-community="scada">
+          <div class="card rounded-3xl bg-gradient-to-br from-blue-500 to-cyan-600 shadow-xl ring-1 ring-black/5 dark:ring-white/10 p-8 text-white hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-2xl font-bold">Scada System</h2>
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+              </div>
+            </div>
+            <p class="text-blue-100 mb-6">Manage SCADA ticketing system</p>
+            <div class="flex items-center text-sm text-blue-200">
+              <span>View System</span>
+              <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -384,20 +408,6 @@
       <!-- Data Management Section -->
       <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
         <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Bold Points Trigger:
-            </label>
-            <select id="boldPointsTrigger" class="w-full rounded-2xl border border-slate-300 dark:border-slate-600 
-                          bg-white dark:bg-slate-800 px-4 py-3 text-sm focus:outline-none focus:ring-2 
-                          focus:ring-emerald-500 focus:border-transparent">
-              <option value="daily">Daily - Show bold for today's readings</option>
-              <option value="monthly">Monthly - Show bold for this month's readings</option>
-            </select>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Controls when data points appear in bold in the legend
-            </p>
-          </div>
           <div class="space-y-3">
             <button id="clearBtnModal"
               class="w-full rounded-2xl bg-red-600 px-4 py-3 text-white font-semibold shadow hover:bg-red-500 active:scale-[0.99] disabled:opacity-60">
@@ -860,6 +870,20 @@
     }
     setTodayDate();
 
+    // Make date picker open when clicking anywhere on the date input
+    inputDate.addEventListener("click", (e) => {
+      // Prevent default to avoid double-opening on some browsers
+      e.preventDefault();
+      // Open the date picker
+      if (inputDate.showPicker) {
+        inputDate.showPicker();
+      } else {
+        // Fallback for browsers that don't support showPicker
+        inputDate.focus();
+        inputDate.click();
+      }
+    });
+
     // ----- Chart Setup -----
     const ctx = document.getElementById("readsChart").getContext("2d");
     const palette = [
@@ -1092,39 +1116,12 @@
         const btn = document.createElement("button");
         btn.className = "flex items-center gap-2 rounded-2xl px-3 py-2 text-sm ring-1 ring-slate-200 dark:ring-slate-700 bg-white/70 dark:bg-slate-900/40";
          
-         // Get recent reading for this location from ALL docs based on trigger setting
-         const now = new Date();
-         let recentReading = null;
+         // Get the most recent reading for this location from ALL docs
+         const locationReadings = allDocs
+           .filter(doc => doc.location === location)
+           .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending (most recent first)
          
-         if (boldPointsTriggerSetting === "daily") {
-           // Show bold for today's readings
-           const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-           
-           recentReading = allDocs.find(doc => {
-             const docDate = new Date(doc.date);
-             const docDay = new Date(docDate.getFullYear(), docDate.getMonth(), docDate.getDate());
-             const todayLocal = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-             return doc.location === location && docDay.getTime() === todayLocal.getTime();
-           });
-         } else if (boldPointsTriggerSetting === "monthly") {
-           // Show bold for this month's readings (most recent in current month)
-           const currentMonth = now.getMonth();
-           const currentYear = now.getFullYear();
-           
-           const monthReadings = allDocs.filter(doc => {
-             const docDate = new Date(doc.date);
-             return doc.location === location && 
-                    docDate.getMonth() === currentMonth && 
-                    docDate.getFullYear() === currentYear;
-           });
-           
-           if (monthReadings.length > 0) {
-             // Get the most recent reading from this month
-             recentReading = monthReadings.reduce((latest, current) => {
-               return new Date(current.date) > new Date(latest.date) ? current : latest;
-             });
-           }
-         }
+         const recentReading = locationReadings.length > 0 ? locationReadings[0] : null;
          
          const readingText = recentReading ? `    ‎ ‎ ‎ <strong>(${recentReading.value} on ${new Date(recentReading.date).toLocaleDateString()})</strong>` : '';
          
@@ -1268,48 +1265,26 @@
        });
      }
 
-     function loadCommunityPreferences(communityId) {
-       const communityPreferencesRef = collection(db, `communities/${communityId}/preferences`);
-       const qPreferences = query(communityPreferencesRef);
-       
-       onSnapshot(qPreferences, (snap) => {
-         if (!snap.empty) {
-           const preferences = snap.docs[0].data();
-           boldPointsTriggerSetting = preferences.boldPointsTrigger || "daily";
-           boldPointsTrigger.value = boldPointsTriggerSetting;
-         } else {
-           // Set default if no preferences exist
-           boldPointsTriggerSetting = "daily";
-           boldPointsTrigger.value = "daily";
-         }
-         // Refresh the legend to apply the new setting
-         renderLegend();
-       });
-     }
+    function loadCommunityPreferences(communityId) {
+      // Always use daily setting - no need to load from preferences
+      boldPointsTriggerSetting = "daily";
+      boldPointsTrigger.value = "daily";
+      // Refresh the legend
+      renderLegend();
+    }
 
-     async function saveBoldPointsTrigger(communityId, triggerValue) {
-       try {
-         const communityPreferencesRef = collection(db, `communities/${communityId}/preferences`);
-         const preferencesDoc = doc(communityPreferencesRef, "settings");
-         
-         await setDoc(preferencesDoc, {
-           boldPointsTrigger: triggerValue,
-           updatedAt: serverTimestamp()
-         }, { merge: true });
-         
-         boldPointsTriggerSetting = triggerValue;
-         // Refresh the legend to apply the new setting
-         renderLegend();
-       } catch (err) {
-         console.error("Error saving bold points trigger preference:", err);
-       }
-     }
+     // Bold points trigger is now always daily - no save function needed
 
      // Community card event listeners
      communityCards.forEach(card => {
        card.addEventListener("click", () => {
          const communityId = card.dataset.community;
-         switchToCommunity(communityId);
+         if (communityId === "scada") {
+           // Navigate to Tickets page - use relative path
+           window.location.href = "../Tickets/index.html";
+         } else {
+           switchToCommunity(communityId);
+         }
        });
      });
 
@@ -1380,14 +1355,72 @@
       regroupAndRender(filtered);
     }
 
+    // Update chart to show selected month, month before, and month after
+    function updateChartForMonth(selectedMonth) {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      
+      // Calculate the three months: previous, selected, and next
+      const prevMonth = selectedMonth === 0 ? 11 : selectedMonth - 1;
+      const nextMonth = selectedMonth === 11 ? 0 : selectedMonth + 1;
+      const prevYear = selectedMonth === 0 ? currentYear - 1 : currentYear;
+      const nextYear = selectedMonth === 11 ? currentYear + 1 : currentYear;
+      
+      // Filter data for the three-month range
+      const filteredDocs = allDocs.filter(doc => {
+        const docDate = new Date(doc.date);
+        const docMonth = docDate.getMonth();
+        const docYear = docDate.getFullYear();
+        
+        // Check if it's in the previous month
+        if (docMonth === prevMonth && docYear === prevYear) return true;
+        // Check if it's in the selected month
+        if (docMonth === selectedMonth && docYear === currentYear) return true;
+        // Check if it's in the next month
+        if (docMonth === nextMonth && docYear === nextYear) return true;
+        
+        return false;
+      });
+      
+      // Regroup and render the filtered data for the modal chart
+      const byLocation = new Map();
+      
+      filteredDocs.forEach(d => {
+        const { location, date, value } = d;
+        const dateKey = new Date(date).toDateString();
+        
+        if (!byLocation.has(location)) byLocation.set(location, new Map());
+        
+        const locationData = byLocation.get(location);
+        if (!locationData.has(dateKey) || new Date(d.date) > new Date(locationData.get(dateKey).x)) {
+          locationData.set(dateKey, { x: date, y: value });
+        }
+      });
+
+      const datasets = [];
+      let i = 0;
+      for (const [location, dateMap] of byLocation.entries()) {
+        const points = Array.from(dateMap.values()).sort((a, b) => a.x - b.x);
+        datasets.push({
+          label: location,
+          data: points,
+          borderColor: colorFor(i),
+          backgroundColor: colorFor(i) + "22",
+          borderWidth: 2,
+          pointRadius: 8,
+          tension: 0.25,
+          fill: false
+        });
+        i++;
+      }
+
+      chartModal.data.datasets = datasets;
+      chartModal.update();
+    }
+
     rangeSelect.addEventListener("change", (e) => applyRange(e.target.value));
 
-    // Bold points trigger change event - automatically saves when changed
-    boldPointsTrigger.addEventListener("change", (e) => {
-      if (currentCommunity) {
-        saveBoldPointsTrigger(currentCommunity, e.target.value);
-      }
-    });
+    // Bold points trigger is now always daily - no change event needed
 
     // Export data button event - export selected month's data
     exportDataBtn.addEventListener("click", async () => {
@@ -1470,30 +1503,16 @@
       const [year, month, day] = date.split("-").map(Number);
       const jsDate = new Date(year, month - 1, day, 12, 0, 0);
       
-      let existingReads = [];
-      
-      if (boldPointsTriggerSetting === "daily") {
-        // Check if there's already data for this location on this exact day
-        existingReads = allDocs.filter(doc => {
-          const docDate = new Date(doc.date);
-          const isMatch = doc.location === location && 
-                 docDate.getFullYear() === year && 
-                 docDate.getMonth() === month - 1 &&
-                 docDate.getDate() === day;
-          
-          return isMatch;
-        });
-      } else if (boldPointsTriggerSetting === "monthly") {
-        // Check if there's already data for this location in this month
-        existingReads = allDocs.filter(doc => {
-          const docDate = new Date(doc.date);
-          const isMatch = doc.location === location && 
-                 docDate.getFullYear() === year && 
-                 docDate.getMonth() === month - 1;
-          
-          return isMatch;
-        });
-      }
+      // Always check for daily duplicates (one entry per day per location)
+      const existingReads = allDocs.filter(doc => {
+        const docDate = new Date(doc.date);
+        const isMatch = doc.location === location && 
+               docDate.getFullYear() === year && 
+               docDate.getMonth() === month - 1 &&
+               docDate.getDate() === day;
+        
+        return isMatch;
+      });
       
       return existingReads.length > 0 ? existingReads[0] : null;
     }
@@ -1503,12 +1522,8 @@
       const [year, month, day] = date.split("-").map(Number);
       const jsDate = new Date(year, month - 1, day, 12, 0, 0);
       
-      let displayDate;
-      if (boldPointsTriggerSetting === "daily") {
-        displayDate = jsDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-      } else if (boldPointsTriggerSetting === "monthly") {
-        displayDate = jsDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-      }
+      // Always use daily format (one entry per day)
+      const displayDate = jsDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       
       overwriteLocationName.textContent = location;
       overwriteMonthYear.textContent = displayDate;
@@ -1755,10 +1770,11 @@
     });
 
 
-    // Update preview when month selection changes
+    // Update preview and chart when month selection changes
     monthSelect.addEventListener("change", (e) => {
       const selectedMonth = parseInt(e.target.value);
       updateExcelPreview(selectedMonth);
+      updateChartForMonth(selectedMonth);
     });
 
     // Email export form
@@ -1916,8 +1932,9 @@
       // Set current month as default selection
       const now = new Date();
       monthSelect.value = now.getMonth();
-      // Update preview for the selected month
+      // Update preview and chart for the selected month
       updateExcelPreview(parseInt(monthSelect.value));
+      updateChartForMonth(parseInt(monthSelect.value));
       monthSelectModalCtl.show();
     }
 

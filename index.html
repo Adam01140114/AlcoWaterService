@@ -5,415 +5,144 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Alco Water Services</title>
   <style>
-    :root {
-      --blue: #0d6efd;
-      --blue-dark: #0a58ca;
-      --bg: #f4f7fb;
-      --text: #0f172a;
-      --muted: #475569;
-      --card: #ffffff;
-      --accent: #0ea5e9;
-    }
-
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at 20% 20%, #e0f2fe 0, #f8fafc 35%, #f8fafc 100%);
-      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #333;
       line-height: 1.6;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(8px);
-      background: rgba(255, 255, 255, 0.9);
-      border-bottom: 1px solid #e2e8f0;
+      text-align: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #ddd;
     }
 
-    .nav {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 14px 20px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--text);
-      text-decoration: none;
-    }
-
-    .brand img {
-      height: 96px;
-      width: auto;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      background: #fff;
-    }
-
-    nav {
-      display: flex;
-      justify-content: center;
-      gap: 18px;
-    }
-
-    nav a {
-      text-decoration: none;
-      color: var(--muted);
-      font-weight: 600;
-      transition: color 0.2s ease, transform 0.2s ease;
-    }
-
-    nav a:hover {
-      color: var(--text);
-      transform: translateY(-1px);
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 12px 18px;
-      border-radius: 10px;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-      text-decoration: none;
-      color: #fff;
-      background: var(--blue);
-      box-shadow: 0 10px 30px rgba(13, 110, 253, 0.2);
-    }
-
-    .btn:hover {
-      background: var(--blue-dark);
-      transform: translateY(-1px);
-      box-shadow: 0 16px 38px rgba(13, 110, 253, 0.26);
-    }
-
-    .btn.outline {
-      background: #fff;
-      color: var(--text);
-      border: 1px solid #cbd5e1;
-      box-shadow: none;
-    }
-
-    .btn.outline:hover {
-      background: #f8fafc;
-      transform: translateY(-1px);
-    }
-
-    .hero {
-      max-width: 1380px;
-      margin: 40px auto 10px;
-      padding: 0 20px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      gap: 28px;
-      align-items: center;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(13, 110, 253, 0.08);
-      color: var(--blue);
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-weight: 700;
-      font-size: 0.9rem;
+    .logo {
+      max-width: 150px;
+      height: auto;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: clamp(2.4rem, 4vw, 3.4rem);
-      margin: 14px 0 12px;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+      font-size: 2rem;
+      color: #333;
     }
 
-    h1 span {
-      color: var(--blue);
+    .subtitle {
+      color: #666;
+      font-size: 0.9rem;
     }
 
-    .hero p {
-      color: var(--muted);
-      font-size: 1.05rem;
-      margin: 0 0 20px;
-      max-width: 640px;
+    .content {
+      margin: 40px 0;
     }
 
-    .badge-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      margin: 20px 0 0;
-    }
-
-    .badge {
-      background: var(--card);
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-weight: 700;
-      color: var(--text);
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
-    }
-
-
-    .section {
-      max-width: 1380px;
-      margin: 28px auto;
-      padding: 0 20px;
-    }
-
-    .section-surface {
-      background: #fff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
-      padding: 22px;
-    }
-
-    .section h2 {
-      margin: 0 0 8px;
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
-    }
-
-    .section p.lead {
-      margin: 0 0 18px;
-      color: var(--muted);
-      max-width: 760px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 18px;
-      box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 46px rgba(15, 23, 42, 0.12);
-    }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 1.15rem;
-    }
-
-    .card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.98rem;
-    }
-
-    .cta {
-      background: linear-gradient(135deg, #0d6efd, #0ea5e9);
-      color: #fff;
-      border-radius: 18px;
-      padding: 28px;
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-      align-items: center;
-      box-shadow: 0 22px 60px rgba(14, 165, 233, 0.28);
-    }
-
-    .cta h3 {
-      margin: 0 0 6px;
+    .content h2 {
       font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #333;
+      border-bottom: 2px solid #0d6efd;
+      padding-bottom: 10px;
     }
 
-    .cta p {
-      margin: 0;
-      opacity: 0.95;
+    .info-section {
+      margin-bottom: 30px;
     }
 
-    .cta .btn {
-      justify-self: end;
-      background: #fff;
-      color: #0d6efd;
-      box-shadow: none;
+    .info-section h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #333;
     }
 
-    .cta .btn:hover {
-      background: #e0f2fe;
-      color: #0a58ca;
+    .info-section p {
+      margin: 5px 0;
+      color: #666;
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+    .contact-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
     }
 
-    .list {
-      padding-left: 18px;
-      color: var(--muted);
+    .contact-info p {
+      margin: 10px 0;
+    }
+
+    .contact-info strong {
+      color: #333;
     }
 
     footer {
-      margin: 40px 0 24px;
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
       text-align: center;
-      color: var(--muted);
-      font-size: 0.95rem;
+      color: #666;
+      font-size: 0.9rem;
     }
 
-    @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr;
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
       }
-
-      nav {
-        display: none;
-      }
-
-      .cta {
-        grid-template-columns: 1fr;
-      }
-
-      .cta .btn {
-        justify-self: start;
+      
+      h1 {
+        font-size: 1.5rem;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="nav">
-      <a class="brand" href="#">
-        <img src="./logo.jpg" alt="Alco Water Services logo">
-        <div>
-          <div>Alco Water Service</div>
-          <small style="color: var(--muted); font-weight: 600;">Serving Salinas since 1932</small>
-        </div>
-      </a>
-      <nav>
-        <a href="#services">Services</a>
-        <a href="#coverage">Service Area</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <div class="nav-actions">
-        <a class="btn" href="tel:+18314240441">Call (831) 424-0441</a>
-      </div>
-    </div>
-  </header>
+  <div class="container">
+    <header>
+      <img src="./logo.jpg" alt="Alco Water Services logo" class="logo">
+      <h1>Alco Water Service</h1>
+      <p class="subtitle">Serving Salinas since 1932</p>
+    </header>
 
-  <main>
-    <section class="hero">
-      <div class="section-surface">
-        <div class="eyebrow">Serving Salinas since 1932</div>
-        <h1>Reliable Water Service for <span>East & North Salinas</span>.</h1>
-        <p>
-          Family-owned Alco Water Service (Alisal Water Corporation) delivers safe, reliable drinking water to nearly 30,000 residents. Nine local well sites drawing from the Salinas Groundwater Basin, backed by continuous testing and compliance.
-        </p>
-        <div class="nav-actions" style="gap: 12px; flex-wrap: wrap;">
-          <a class="btn" href="tel:+18314240441">Call (831) 424-0441</a>
-          <a class="btn outline" href="#services">What we provide</a>
+    <main class="content">
+      <section class="info-section">
+        <h2>Contact Information</h2>
+        <div class="contact-info">
+          <p><strong>Phone:</strong> <a href="tel:+18314240441">(831) 424-0441</a></p>
+          <p><strong>Address:</strong> 249 Williams Road, Salinas, CA 93905</p>
+          <p><strong>Service Area:</strong> East and North Salinas</p>
         </div>
-        <div class="badge-grid">
-          <div class="badge">Potable water utility</div>
-          <div class="badge">Continuous testing & reporting</div>
-          <div class="badge">Salinas Groundwater Basin</div>
-          <div class="badge">Regulated by CPUC</div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section id="services" class="section">
-      <div class="section-surface">
-        <h2>What We Provide</h2>
-        <p class="lead">Regulated, reliable water utility service for East and North Salinas.</p>
-        <div class="cards">
-          <div class="card">
-            <h3>Safe Drinking Water</h3>
-            <p>Production and distribution from nine local wells with continuous monitoring and reporting.</p>
-          </div>
-          <div class="card">
-            <h3>Water Quality Testing</h3>
-            <p>Compliance sampling and Consumer Confidence Reports meeting state and EPA standards.</p>
-          </div>
-          <div class="card">
-            <h3>Customer Service</h3>
-            <p>Account support, service turn-ons/offs, and clear communication for local residents.</p>
-          </div>
-          <div class="card">
-            <h3>Infrastructure Care</h3>
-            <p>System maintenance to keep distribution reliable across our service area.</p>
-          </div>
-        </div>
-      </div>
-    </section>
+      <section class="info-section">
+        <h2>About</h2>
+        <p>Alco Water Service (Alisal Water Corporation) is a regulated water utility providing service to East and North Salinas.</p>
+      </section>
 
-    <section id="coverage" class="section">
-      <div class="section-surface cta">
-        <div>
-          <h3>Our Service Area</h3>
-          <p>East and North Salinas, supplied by nine well sites within roughly a 10-mile radius, drawing from the Salinas Groundwater Basin (Pressure and East Side areas).</p>
-        </div>
-        <a class="btn" href="tel:+18314240441">Call (831) 424-0441</a>
-      </div>
-    </section>
+      <section class="info-section">
+        <h2>Customer Service</h2>
+        <p>For account inquiries, billing questions, or service requests, please contact us at (831) 424-0441.</p>
+        <p>Office hours and payment methods available upon request.</p>
+      </section>
+    </main>
 
-    <section id="contact" class="section">
-      <div class="section-surface">
-        <h2>Contact</h2>
-        <p class="lead">We serve East and North Salinas. Call or visit for account support and service requests.</p>
-        <div class="cards">
-          <div class="card">
-            <h3>Call</h3>
-            <p><strong>(831) 424-0441</strong><br>Customer service and billing.</p>
-          </div>
-          <div class="card">
-            <h3>Visit</h3>
-            <p>249 Williams Road<br>Salinas, CA 93905<br><small>Office payments: cash/check per chamber listing.</small></p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    © 2025 Alco Water Services. Safety-led, customer-first field services.
-  </footer>
-  <script>
-    // Quick shortcut to Timesheet portal: Ctrl+Shift or Cmd+Shift
-    document.addEventListener("keydown", (event) => {
-      const isPortalShortcut = (event.ctrlKey || event.metaKey) && event.shiftKey;
-      if (isPortalShortcut && !event.altKey) {
-        window.location.href = "file:///Users/platnm/Desktop/Projects/alco/Timesheets/index.html";
-      }
-    });
-  </script>
+    <footer>
+      <p>© 2025 Alco Water Services</p>
+      <p>Regulated by the California Public Utilities Commission (CPUC)</p>
+    </footer>
+  </div>
 </body>
 </html>
