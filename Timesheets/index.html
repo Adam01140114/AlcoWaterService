@@ -488,9 +488,10 @@
       cursor: pointer;
     }
 
-    /* Hide time placeholders by default (desktop) */
-    .time-placeholder {
-      display: none;
+    /* Hide time placeholders by default (desktop) - ensure they never show on desktop */
+    .time-placeholder,
+    .comment-placeholder {
+      display: none !important;
     }
 
 
@@ -663,8 +664,9 @@
         color: #999;
       }
 
-      /* Show placeholder labels in mobile mode (already inside mobile media query) */
-      .time-placeholder {
+      /* Show placeholder labels in mobile mode only */
+      .time-placeholder,
+      .comment-placeholder {
         display: block !important;
       }
 
@@ -702,7 +704,8 @@
       }
 
       /* When input has value, hide placeholder */
-      .time-input-wrapper.has-value .time-placeholder {
+      .time-input-wrapper.has-value .time-placeholder,
+      .comment-input-wrapper.has-value .comment-placeholder {
         display: none !important;
       }
 
