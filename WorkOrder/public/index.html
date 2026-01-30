@@ -1578,6 +1578,23 @@
        });
      }
 
+     // State abbreviation to full name mapping
+     const STATE_NAMES = {
+       'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+       'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware',
+       'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho',
+       'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas',
+       'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+       'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi',
+       'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada',
+       'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+       'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma',
+       'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+       'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah',
+       'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia',
+       'WI': 'Wisconsin', 'WY': 'Wyoming', 'DC': 'District of Columbia'
+     };
+
      // Update full service address function
      function updateFullServiceAddress() {
        const street = document.getElementById('service_street').value || '';
@@ -1597,6 +1614,19 @@
          document.getElementById('customForm').appendChild(streetUnitField);
        }
        streetUnitField.value = streetUnit;
+       
+       // Create service_city_state_zip hidden textbox (city, state, zip)
+       const stateFullName = STATE_NAMES[state.toUpperCase()] || state;
+       const cityStateZip = [city, stateFullName, zip].filter(part => part.trim()).join(', ');
+       let cityStateZipField = document.getElementById('service_city_state_zip');
+       if (!cityStateZipField) {
+         cityStateZipField = document.createElement('input');
+         cityStateZipField.type = 'hidden';
+         cityStateZipField.id = 'service_city_state_zip';
+         cityStateZipField.name = 'service_city_state_zip';
+         document.getElementById('customForm').appendChild(cityStateZipField);
+       }
+       cityStateZipField.value = cityStateZip;
        
        // Combine the address parts, including unit if present
        const addressParts = [street];
@@ -1619,6 +1649,7 @@
        hiddenField.value = fullAddress;
        console.log(`Updated full service address: "${fullAddress}"`);
        console.log(`Updated service street unit: "${streetUnit}"`);
+       console.log(`Updated service city state zip: "${cityStateZip}"`);
      }
 
      // Update full bill address function
