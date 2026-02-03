@@ -843,8 +843,23 @@ loadUserWorkSchedule();
   });
   
   /** Easy Fill => fill times from user settings */
- easyFillBtn.addEventListener("click", () => {
+easyFillBtn.addEventListener("click", () => {
 const rows = timesheetFormDiv.querySelectorAll(".timesheet-row");
+const syncTimePlaceholder = (input) => {
+  if (!input) return;
+  const wrapper = input.closest('.time-input-wrapper');
+  const placeholder = wrapper ? wrapper.querySelector('.time-placeholder') : null;
+  if (!wrapper || !placeholder) return;
+
+  if (input.value) {
+    wrapper.classList.add('has-value');
+    placeholder.style.display = 'none';
+  } else {
+    wrapper.classList.remove('has-value');
+    placeholder.style.display = 'block';
+  }
+};
+
 rows.forEach((r) => {
   const dt = r.getAttribute("data-date");
   const dObj = new Date(dt + "T12:00:00");
@@ -866,6 +881,11 @@ rows.forEach((r) => {
   et2.value = ds.end2   || "";
   job.value = ds.job || "";
   cmt.value = ds.comment || "";
+
+  syncTimePlaceholder(st1);
+  syncTimePlaceholder(et1);
+  syncTimePlaceholder(st2);
+  syncTimePlaceholder(et2);
 });
 
 // Because the user didn't type these values, call saveTimesheetDraft() yourself:
