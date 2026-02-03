@@ -577,8 +577,8 @@
       .add-on-call-btn{
         display:block;
         margin:0.5rem auto;
-        width: 50%;
-        max-width: 50%;
+        width: 80%;
+        max-width: 80%;
         box-sizing: border-box;
         white-space: normal;
         word-wrap: break-word;
@@ -587,8 +587,8 @@
       }
 
       .add-on-call-btn.is-cancel {
-        width: 50%;
-        max-width: 50%;
+        width: 80%;
+        max-width: 80%;
         margin: 0.5rem auto;
         transform: translateX(50%);
       }
@@ -785,13 +785,15 @@
           <label for="timesheet-start">Pay Period Start Date:</label>
           <input type="date" id="timesheet-start" placeholder="mm/dd/yyyy" />
         </div>
+        <div class="vertical-button-stack">
+          <button id="easy-fill-btn">Easy Fill</button>
+        </div>
       </div>
       <div class="timesheet-entry-container hidden" id="timesheet-entry-container">
         <div class="table-wrapper">
           <div id="timesheet-form"></div>
         </div>
         <div class="vertical-button-stack">
-          <button id="easy-fill-btn">Easy Fill</button>
           <button id="export-timesheet-btn">Export PDF</button>
           <button id="submit-timesheet-btn">Submit Timesheet</button>
           <button id="cancel-timesheet-btn">Cancel</button>
