@@ -47,7 +47,6 @@ function saveTimesheetDraft() {
 
   function debugPayPeriod(label, payload) {
     if (!DEBUG_PAY_PERIOD) return;
-    console.debug(`[pay-period] ${label}`, payload);
   }
 
   function toLocalIsoDate(date) {
@@ -218,6 +217,66 @@ function saveTimesheetDraft() {
     return new Date(y, m - 1, d);
   }
   
+  /** Validate that end time is after start time, alert if not */
+  function validateTimeRange(startTime, endTime, periodName = '', endTimeInput = null) {
+    console.log('[validateTimeRange] Called with:', {
+      startTime,
+      endTime,
+      periodName,
+      hasEndTimeInput: !!endTimeInput,
+      startTimeType: typeof startTime,
+      endTimeType: typeof endTime
+    });
+    
+    if (!startTime || startTime === " " || !endTime || endTime === " ") {
+      console.log('[validateTimeRange] Empty values detected, returning true (valid)');
+      return true; // Empty values are valid
+    }
+    
+    console.log('[validateTimeRange] Parsing times...');
+    const [sh, sm] = startTime.split(':').map(Number);
+    const [eh, em] = endTime.split(':').map(Number);
+    console.log('[validateTimeRange] Parsed values:', {
+      startHour: sh,
+      startMin: sm,
+      endHour: eh,
+      endMin: em
+    });
+    
+    const sTot = sh * 60 + sm;
+    const eTot = eh * 60 + em;
+    console.log('[validateTimeRange] Total minutes:', {
+      startTotal: sTot,
+      endTotal: eTot,
+      comparison: `${eTot} <= ${sTot} = ${eTot <= sTot}`
+    });
+    
+    if (eTot <= sTot) {
+      console.log('[validateTimeRange] VALIDATION FAILED - End time is before or equal to start time');
+      const startFormatted = formatTime24ToAmPm(startTime);
+      const endFormatted = formatTime24ToAmPm(endTime);
+      const periodText = periodName ? ` (${periodName})` : '';
+      console.log('[validateTimeRange] Showing alert with formatted times:', {
+        startFormatted,
+        endFormatted,
+        periodText
+      });
+      alert(`Warning: End time (${endFormatted}) is before or equal to start time (${startFormatted})${periodText}.\n\nPlease check your times. If you worked overnight, you may need to split this into two entries.`);
+      // Clear the end time input so user can re-enter
+      if (endTimeInput) {
+        console.log('[validateTimeRange] Clearing end time input');
+        endTimeInput.value = '';
+        // Trigger input event to update placeholder if needed
+        endTimeInput.dispatchEvent(new Event('input'));
+      } else {
+        console.log('[validateTimeRange] No endTimeInput provided, cannot clear');
+      }
+      return false;
+    }
+    console.log('[validateTimeRange] Validation passed - times are valid');
+    return true;
+  }
+
   /** compute hours from "HH:MM" start/end */
   function calculateHours(st, et) {
     if (!st || st===" " || !et || et===" ") {
@@ -372,6 +431,7 @@ function saveTimesheetDraft() {
   const timesheetStartInput = document.getElementById('timesheet-start');
   const timesheetFormDiv    = document.getElementById('timesheet-form');
   const easyFillBtn         = document.getElementById('easy-fill-btn');
+  const clearTimesheetBtn   = document.getElementById('clear-timesheet-btn');
   const exportTimesheetBtn  = document.getElementById('export-timesheet-btn');
   const submitTimesheetBtn  = document.getElementById('submit-timesheet-btn');
   const cancelTimesheetBtn  = document.getElementById('cancel-timesheet-btn');
@@ -974,7 +1034,8 @@ printOrExportTimesheet({
     emailjs.send("service_09kopw4", "template_bc2wnuf", {
       user: userName,
       pay_period: payPeriod,
-      email: adminEmail
+      email: adminEmail,
+      login_url: "https://alcowaterservice.com/timesheets/"
     })
     .then(function(response) {
     }, function(error) {
@@ -1071,6 +1132,58 @@ localStorage.removeItem('timesheetDraft');
 
 
 });
+  
+  /** Clear all inputs in the timesheet */
+  clearTimesheetBtn.addEventListener('click', () => {
+    if (!confirm("Are you sure you want to clear all timesheet entries? This cannot be undone.")) {
+      return;
+    }
+    console.log('[clearTimesheetBtn] Clearing all timesheet inputs');
+    
+    // Clear all time inputs
+    const rows = timesheetFormDiv.querySelectorAll('.timesheet-row');
+    rows.forEach(row => {
+      const st1Input = row.querySelector('input[name="start1"]');
+      const et1Input = row.querySelector('input[name="end1"]');
+      const st2Input = row.querySelector('input[name="start2"]');
+      const et2Input = row.querySelector('input[name="end2"]');
+      const jobSelect = row.querySelector('select[name="jobDescription"]');
+      const commentInput = row.querySelector('input[name="comment"]');
+      
+      if (st1Input) {
+        st1Input.value = '';
+        st1Input.dispatchEvent(new Event('input'));
+      }
+      if (et1Input) {
+        et1Input.value = '';
+        et1Input.dispatchEvent(new Event('input'));
+      }
+      if (st2Input) {
+        st2Input.value = '';
+        st2Input.dispatchEvent(new Event('input'));
+      }
+      if (et2Input) {
+        et2Input.value = '';
+        et2Input.dispatchEvent(new Event('input'));
+      }
+      if (jobSelect) jobSelect.value = '';
+      if (commentInput) commentInput.value = '';
+      
+      // Clear on-call sessions
+      if (row.onCallSessions) {
+        row.onCallSessions = [];
+        const onCallTd = row.querySelector('td[data-label="On Call Hours"]');
+        if (onCallTd) {
+          const sessionList = onCallTd.querySelector('.on-call-session-list');
+          if (sessionList) sessionList.innerHTML = '';
+        }
+      }
+    });
+    
+    // Clear draft
+    localStorage.removeItem('timesheetDraft');
+    console.log('[clearTimesheetBtn] All inputs cleared');
+  });
   
   /** Cancel creation */
   cancelTimesheetBtn.addEventListener('click', () => {
@@ -1211,24 +1324,48 @@ st1Td.setAttribute('data-label', 'Start Time');
 const st1Wrapper = createTimeInput('start1', 'Start Time');
 st1Td.appendChild(st1Wrapper);
 const st1Input = st1Wrapper.querySelector('input[name="start1"]');
+console.log('[renderTimesheetForm] Created st1Input:', {
+  exists: !!st1Input,
+  type: st1Input?.type,
+  name: st1Input?.name,
+  value: st1Input?.value
+});
 
 const et1Td = document.createElement('td');
 et1Td.setAttribute('data-label', 'End Time');
 const et1Wrapper = createTimeInput('end1', 'End Time');
 et1Td.appendChild(et1Wrapper);
 const et1Input = et1Wrapper.querySelector('input[name="end1"]');
+console.log('[renderTimesheetForm] Created et1Input:', {
+  exists: !!et1Input,
+  type: et1Input?.type,
+  name: et1Input?.name,
+  value: et1Input?.value
+});
 
 const st2Td = document.createElement('td');
 st2Td.setAttribute('data-label', 'Start Time');
 const st2Wrapper = createTimeInput('start2', 'Start Time');
 st2Td.appendChild(st2Wrapper);
 const st2Input = st2Wrapper.querySelector('input[name="start2"]');
+console.log('[renderTimesheetForm] Created st2Input:', {
+  exists: !!st2Input,
+  type: st2Input?.type,
+  name: st2Input?.name,
+  value: st2Input?.value
+});
 
 const et2Td = document.createElement('td');
 et2Td.setAttribute('data-label', 'End Time');
 const et2Wrapper = createTimeInput('end2', 'End Time');
 et2Td.appendChild(et2Wrapper);
 const et2Input = et2Wrapper.querySelector('input[name="end2"]');
+console.log('[renderTimesheetForm] Created et2Input:', {
+  exists: !!et2Input,
+  type: et2Input?.type,
+  name: et2Input?.name,
+  value: et2Input?.value
+});
 
       // On Call Hours cell
       const onCallTd = document.createElement('td');
@@ -1419,22 +1556,134 @@ const et2Input = et2Wrapper.querySelector('input[name="end2"]');
         
       };
       
+      // Validation function for end1
+      const validateEnd1 = () => {
+        // Get fresh values directly from inputs
+        const start1Val = st1Input ? st1Input.value : '';
+        const end1Val = et1Input ? et1Input.value : '';
+        
+        console.log('[validateEnd1] Called', {
+          start1Value: start1Val,
+          end1Value: end1Val,
+          start1Exists: !!start1Val,
+          end1Exists: !!end1Val,
+          st1InputExists: !!st1Input,
+          et1InputExists: !!et1Input
+        });
+        
+        if (start1Val && end1Val) {
+          console.log('[validateEnd1] Both values exist, calling validateTimeRange');
+          const result = validateTimeRange(start1Val, end1Val, 'First Shift', et1Input);
+          console.log('[validateEnd1] Validation result:', result);
+          return result;
+        } else {
+          console.log('[validateEnd1] Missing values, skipping validation', {
+            start1Val,
+            end1Val
+          });
+          return true;
+        }
+      };
+      
+      // Validation function for end2
+      const validateEnd2 = () => {
+        // Get fresh values directly from inputs
+        const start2Val = st2Input ? st2Input.value : '';
+        const end2Val = et2Input ? et2Input.value : '';
+        const start1Val = st1Input ? st1Input.value : '';
+        const end1Val = et1Input ? et1Input.value : '';
+        
+        console.log('[validateEnd2] Called', {
+          start2Value: start2Val,
+          end2Value: end2Val,
+          start1Value: start1Val,
+          end1Value: end1Val,
+          allInputsExist: {
+            st1Input: !!st1Input,
+            et1Input: !!et1Input,
+            st2Input: !!st2Input,
+            et2Input: !!et2Input
+          }
+        });
+        
+        if (start2Val && end2Val) {
+          console.log('[validateEnd2] Both start2 and end2 exist, validating');
+          const result = validateTimeRange(start2Val, end2Val, 'Second Shift', et2Input);
+          console.log('[validateEnd2] Validation result:', result);
+          if (!result) return false;
+        }
+        // Also check special case: start1 filled, end1 blank, end2 filled
+        if (start1Val && !end1Val && end2Val) {
+          console.log('[validateEnd2] Special case detected: start1 filled, end1 blank, end2 filled');
+          const result = validateTimeRange(start1Val, end2Val, 'Combined Period', et2Input);
+          console.log('[validateEnd2] Special case validation result:', result);
+          if (!result) return false;
+        }
+        return true;
+      };
+      
       // Add immediate logging and calculate total hours when any time input changes
-      st1Input.addEventListener('input', (e) => {
-        saveTimesheetDraft();
-        updateTotalHours();
-      });
-      et1Input.addEventListener('input', (e) => {
-        saveTimesheetDraft();
-        updateTotalHours();
-      });
-      st2Input.addEventListener('input', (e) => {
-        saveTimesheetDraft();
-        updateTotalHours();
-      });
-      et2Input.addEventListener('input', (e) => {
-        saveTimesheetDraft();
-        updateTotalHours();
+      // Use multiple events (input, change, blur) to catch all scenarios including time picker
+      ['input', 'change', 'blur'].forEach(eventType => {
+        console.log(`[EVENT SETUP] Adding ${eventType} listeners for time inputs`);
+        
+        st1Input.addEventListener(eventType, (e) => {
+          console.log(`[st1Input ${eventType}] Event fired`, {
+            value: st1Input.value,
+            target: e.target,
+            currentTarget: e.currentTarget
+          });
+          saveTimesheetDraft();
+          // If end1 is already filled, validate it against the new start1
+          if (et1Input.value) {
+            console.log(`[st1Input ${eventType}] end1 has value, validating`);
+            validateEnd1();
+          } else {
+            console.log(`[st1Input ${eventType}] end1 is empty, skipping validation`);
+          }
+          updateTotalHours();
+        });
+        
+        et1Input.addEventListener(eventType, (e) => {
+          console.log(`[et1Input ${eventType}] Event fired`, {
+            value: et1Input.value,
+            start1Value: st1Input.value,
+            target: e.target,
+            currentTarget: e.currentTarget
+          });
+          saveTimesheetDraft();
+          console.log(`[et1Input ${eventType}] Calling validateEnd1`);
+          validateEnd1();
+          updateTotalHours();
+        });
+        
+        st2Input.addEventListener(eventType, (e) => {
+          console.log(`[st2Input ${eventType}] Event fired`, {
+            value: st2Input.value,
+            target: e.target
+          });
+          saveTimesheetDraft();
+          // If end2 is already filled, validate it against the new start2
+          if (et2Input.value) {
+            console.log(`[st2Input ${eventType}] end2 has value, validating`);
+            validateEnd2();
+          } else {
+            console.log(`[st2Input ${eventType}] end2 is empty, skipping validation`);
+          }
+          updateTotalHours();
+        });
+        
+        et2Input.addEventListener(eventType, (e) => {
+          console.log(`[et2Input ${eventType}] Event fired`, {
+            value: et2Input.value,
+            start2Value: st2Input.value,
+            target: e.target
+          });
+          saveTimesheetDraft();
+          console.log(`[et2Input ${eventType}] Calling validateEnd2`);
+          validateEnd2();
+          updateTotalHours();
+        });
       });
       
       // Initial calculation
@@ -1557,6 +1806,10 @@ return [...defaultJobs, ...userCustomJobs].sort((a, b) => a.localeCompare(b));
     const heading = document.createElement("h3");
     heading.textContent = "Contested Timesheets";
     contestedSection.appendChild(heading);
+    
+    // Add a line break after the heading
+    const br = document.createElement("br");
+    contestedSection.appendChild(br);
 
     contestedArr.forEach((ts) => {
       contestedSection.appendChild(buildTimesheetCard(ts, true));
@@ -1770,32 +2023,63 @@ function buildEditableTimesheetTable(entries, editedEntries, onEdit) {
       })})`;
     row.appendChild(dateCell);
 
-    // Editable time fields
-    ["start1", "end1", "start2", "end2"].forEach((k) => {
+    // Editable time fields - handle each individually for validation
+    const timeFields = [
+      { key: "start1", label: "First Shift Start" },
+      { key: "end1", label: "First Shift End" },
+      { key: "start2", label: "Second Shift Start" },
+      { key: "end2", label: "Second Shift End" }
+    ];
+    
+    timeFields.forEach((field) => {
       const td = document.createElement("td");
       const span = document.createElement("span");
-      span.textContent = formatTime24ToAmPm(e[k] === " " ? "" : e[k]);
+      span.textContent = formatTime24ToAmPm(e[field.key] === " " ? "" : e[field.key]);
       span.style.cursor = "pointer";
       span.ondblclick = function () {
         const input = document.createElement("input");
         input.type = "time";
-        input.value = e[k] && e[k] !== " " ? e[k] : "";
+        input.value = e[field.key] && e[field.key] !== " " ? e[field.key] : "";
         input.onblur = function () {
           const newVal = input.value;
-          span.textContent = formatTime24ToAmPm(newVal);
-          td.replaceChild(span, input);
-          if (newVal !== e[k]) {
-            editedEntries[idx][k] = newVal;
-            // recalc total hours
-            console.log('[buildEditableTimesheetTable] Entry values:', {
-              start1: editedEntries[idx].start1,
-              end1: editedEntries[idx].end1,
-              start2: editedEntries[idx].start2,
-              end2: editedEntries[idx].end2
-            });
-            editedEntries[idx].totalHours =
-              calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
-            onEdit();
+          let isValid = true;
+          
+          // Validate time ranges before saving
+          if (newVal && newVal !== e[field.key]) {
+            if (field.key === "end1" && editedEntries[idx].start1) {
+              isValid = validateTimeRange(editedEntries[idx].start1, newVal, field.label, input);
+            } else if (field.key === "end2" && editedEntries[idx].start2) {
+              isValid = validateTimeRange(editedEntries[idx].start2, newVal, field.label, input);
+            } else if (field.key === "end2" && editedEntries[idx].start1 && !editedEntries[idx].end1) {
+              // Special case: start1 filled, end1 blank, end2 filled
+              isValid = validateTimeRange(editedEntries[idx].start1, newVal, "Combined Period", input);
+            }
+          }
+          
+          // Only save if validation passed or value is empty
+          if (isValid) {
+            const finalVal = input.value; // Get value after potential clearing
+            span.textContent = formatTime24ToAmPm(finalVal);
+            td.replaceChild(span, input);
+            if (finalVal !== e[field.key]) {
+              editedEntries[idx][field.key] = finalVal;
+              // recalc total hours
+              console.log('[buildEditableTimesheetTable] Entry values:', {
+                start1: editedEntries[idx].start1,
+                end1: editedEntries[idx].end1,
+                start2: editedEntries[idx].start2,
+                end2: editedEntries[idx].end2
+              });
+              editedEntries[idx].totalHours =
+                calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+              onEdit();
+            } else {
+              // Value unchanged, just replace input with span
+              td.replaceChild(span, input);
+            }
+          } else {
+            // Validation failed, keep input focused so user can re-enter
+            input.focus();
           }
         };
         input.onkeydown = function (ev) {
@@ -2360,6 +2644,23 @@ function buildTimesheetTable(entries) {
         dCell.innerHTML = "<span" + styleNone(e.date) + ">" + dateHtml + "</span>";
         dCell.style.whiteSpace = 'normal';
   
+        // Total Hours - create early so it can be updated live by time cell callbacks
+        let totalHrs = calculateTotalHours(e.start1, e.end1, e.start2, e.end2);
+        if (Array.isArray(e.onCallSessions)) {
+          totalHrs += calculateOnCallSessionsHours(e.onCallSessions);
+        }
+        const hrsCell = document.createElement('td');
+        hrsCell.textContent = (isNaN(totalHrs) ? 0 : totalHrs).toFixed(2);
+        
+        // Helper function to update hours cell - must be defined before time cells
+        const updateHoursCell = () => {
+          let totalHrs = calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+          if (Array.isArray(e.onCallSessions)) {
+            totalHrs += calculateOnCallSessionsHours(e.onCallSessions);
+          }
+          hrsCell.textContent = (isNaN(totalHrs) ? 0 : totalHrs).toFixed(2);
+        };
+
         // Editable cells for admin (pending only)
         function makeEditableCell(val, type, cb) {
           const cell = document.createElement('td');
@@ -2394,13 +2695,31 @@ function buildTimesheetTable(entries) {
             }
             input.onblur = function() {
               let newVal = input.value;
-              if (type === 'time') newVal = newVal ? formatTime24ToAmPm(newVal) : '';
-              span.textContent = newVal;
-              cell.replaceChild(span, input);
-              if (newVal !== val) {
-                edited = true;
-                cb(newVal);
-                updateContestButton();
+              let isValid = true;
+              
+              // For time fields, validate before saving
+              if (type === 'time' && newVal) {
+                // Validation will be handled in the callback
+                isValid = true; // Will be set by callback if validation fails
+              }
+              
+              if (isValid) {
+                if (type === 'time') newVal = newVal ? formatTime24ToAmPm(newVal) : '';
+                span.textContent = newVal;
+                cell.replaceChild(span, input);
+                if (newVal !== val) {
+                  edited = true;
+                  // Pass input element to callback for validation
+                  const validationResult = cb(newVal, input);
+                  // If callback returns false, validation failed - restore input
+                  if (validationResult === false) {
+                    cell.replaceChild(input, span);
+                    input.focus();
+                    return;
+                  }
+                  // Validation passed (or no validation needed)
+                  updateContestButton();
+                }
               }
             };
             input.onkeydown = function(ev) {
@@ -2414,48 +2733,61 @@ function buildTimesheetTable(entries) {
         }
   
         // Start1
-        const st1Cell = makeEditableCell(formatTime24ToAmPm(e.start1 || ' '), 'time', v => {
-          editedEntries[idx].start1 = parseAmPmTo24Hr(v);
-          console.log('[showAdminUserTimesheets] Recalculating with:', {
-            start1: editedEntries[idx].start1,
-            end1: editedEntries[idx].end1,
-            start2: editedEntries[idx].start2,
-            end2: editedEntries[idx].end2
-          });
+        const st1Cell = makeEditableCell(formatTime24ToAmPm(e.start1 || ' '), 'time', (v, input) => {
+          const newVal24 = parseAmPmTo24Hr(v);
+          editedEntries[idx].start1 = newVal24;
+          // If end1 is already filled, validate it against the new start1
+          if (editedEntries[idx].end1 && newVal24) {
+            const isValid = validateTimeRange(newVal24, editedEntries[idx].end1, 'First Shift', null);
+            if (!isValid) return false;
+          }
           editedEntries[idx].totalHours = calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+          updateHoursCell();
+          return true;
         });
         // End1
-        const et1Cell = makeEditableCell(formatTime24ToAmPm(e.end1 || ' '), 'time', v => {
-          editedEntries[idx].end1 = parseAmPmTo24Hr(v);
-          console.log('[showAdminUserTimesheets] Recalculating with:', {
-            start1: editedEntries[idx].start1,
-            end1: editedEntries[idx].end1,
-            start2: editedEntries[idx].start2,
-            end2: editedEntries[idx].end2
-          });
+        const et1Cell = makeEditableCell(formatTime24ToAmPm(e.end1 || ' '), 'time', (v, input) => {
+          const newVal24 = parseAmPmTo24Hr(v);
+          // Validate end1 against start1 before saving
+          if (editedEntries[idx].start1 && newVal24) {
+            const isValid = validateTimeRange(editedEntries[idx].start1, newVal24, 'First Shift', input);
+            if (!isValid) return false;
+          }
+          editedEntries[idx].end1 = newVal24;
           editedEntries[idx].totalHours = calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+          updateHoursCell();
+          return true;
         });
         // Start2
-        const st2Cell = makeEditableCell(formatTime24ToAmPm(e.start2 || ' '), 'time', v => {
-          editedEntries[idx].start2 = parseAmPmTo24Hr(v);
-          console.log('[showAdminUserTimesheets] Recalculating with:', {
-            start1: editedEntries[idx].start1,
-            end1: editedEntries[idx].end1,
-            start2: editedEntries[idx].start2,
-            end2: editedEntries[idx].end2
-          });
+        const st2Cell = makeEditableCell(formatTime24ToAmPm(e.start2 || ' '), 'time', (v, input) => {
+          const newVal24 = parseAmPmTo24Hr(v);
+          editedEntries[idx].start2 = newVal24;
+          // If end2 is already filled, validate it against the new start2
+          if (editedEntries[idx].end2 && newVal24) {
+            const isValid = validateTimeRange(newVal24, editedEntries[idx].end2, 'Second Shift', null);
+            if (!isValid) return false;
+          }
           editedEntries[idx].totalHours = calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+          updateHoursCell();
+          return true;
         });
         // End2
-        const et2Cell = makeEditableCell(formatTime24ToAmPm(e.end2 || ' '), 'time', v => {
-          editedEntries[idx].end2 = parseAmPmTo24Hr(v);
-          console.log('[showAdminUserTimesheets] Recalculating with:', {
-            start1: editedEntries[idx].start1,
-            end1: editedEntries[idx].end1,
-            start2: editedEntries[idx].start2,
-            end2: editedEntries[idx].end2
-          });
+        const et2Cell = makeEditableCell(formatTime24ToAmPm(e.end2 || ' '), 'time', (v, input) => {
+          const newVal24 = parseAmPmTo24Hr(v);
+          // Validate end2 against start2 before saving
+          if (editedEntries[idx].start2 && newVal24) {
+            const isValid = validateTimeRange(editedEntries[idx].start2, newVal24, 'Second Shift', input);
+            if (!isValid) return false;
+          }
+          // Also check special case: start1 filled, end1 blank, end2 filled
+          if (editedEntries[idx].start1 && !editedEntries[idx].end1 && newVal24) {
+            const isValid = validateTimeRange(editedEntries[idx].start1, newVal24, 'Combined Period', input);
+            if (!isValid) return false;
+          }
+          editedEntries[idx].end2 = newVal24;
           editedEntries[idx].totalHours = calculateTotalHours(editedEntries[idx].start1, editedEntries[idx].end1, editedEntries[idx].start2, editedEntries[idx].end2);
+          updateHoursCell();
+          return true;
         });
         // On Call Hours (display only)
         const onCallTd = document.createElement('td');
@@ -2470,20 +2802,15 @@ function buildTimesheetTable(entries) {
           });
         }
         // Job
-        const jobCell = makeEditableCell(e.jobDescription || '', 'select', v => {
+        const jobCell = makeEditableCell(e.jobDescription || '', 'select', (v, input) => {
           editedEntries[idx].jobDescription = v;
+          return true;
         });
         // Comment
-        const cCell = makeEditableCell(e.comment || '', 'text', v => {
+        const cCell = makeEditableCell(e.comment || '', 'text', (v, input) => {
           editedEntries[idx].comment = v;
+          return true;
         });
-        // Total Hours
-        let totalHrs = calculateTotalHours(e.start1, e.end1, e.start2, e.end2);
-        if (Array.isArray(e.onCallSessions)) {
-          totalHrs += calculateOnCallSessionsHours(e.onCallSessions);
-        }
-        const hrsCell = document.createElement('td');
-        hrsCell.textContent = (isNaN(totalHrs) ? 0 : totalHrs).toFixed(2);
   
         row.appendChild(dCell);
         row.appendChild(st1Cell);
@@ -2535,14 +2862,15 @@ function buildTimesheetTable(entries) {
               contested: true,
               adminEditComment: commentBox.value.trim()
             });
-            // Send contest email to admin (not user)
+            // Send contest email to the user who submitted the timesheet
+            const userEmail = ts.userEmail || ts.email || "becky@alcowater.com"; // Fallback to admin if user email not found
             sendTimesheetContestedEmail({
-              toEmail: "becky@alcowater.com",
+              toEmail: userEmail,
               userName: ts.userName,
               startDate: ts.startDate,
               endDate: ts.endDate
             });
-            alert(`email has been sent to ${"becky@alcowater.com"}`);
+            alert(`Email has been sent to ${userEmail}`);
           } else {
             if (confirm("Approve this timesheet?")) {
               await updateDoc(doc(db, "timesheets", ts.id), {
@@ -2945,7 +3273,8 @@ function sendTimesheetContestedEmail({
     email: toEmail,
     user: userName,
     start_date: startDate,
-    end_date: endDate
+    end_date: endDate,
+    login_url: "https://alcowaterservice.com/timesheets/"
   })
   .then(function(response) {
   }, function(error) {
