@@ -444,18 +444,33 @@
     
     
   
+    /* Date column: compact width, two lines (weekday + date) */
+    th:nth-child(1), td:nth-child(1) {
+      min-width: 95px !important;
+      width: 95px !important;
+      max-width: 120px;
+      white-space: normal !important;
+      line-height: 1.2;
+    }
+
     th[data-label="On Call Hours"], td[data-label="On Call Hours"], th.on-call-hours, td.on-call-hours {
-      min-width: 220px !important;
-      width: 220px !important;
-      max-width: 240px;
+      min-width: 140px !important;
+      width: 140px !important;
+      max-width: 170px;
       white-space: nowrap;
     }
-    /* Force On Call Hours column to be wide and text to stay on one line */
+    /* Force On Call Hours column width and text to stay on one line */
     th:nth-child(6), td:nth-child(6) {
-      min-width: 200px !important;
-      width: 200px !important;
-      max-width: 250px;
+      min-width: 140px !important;
+      width: 140px !important;
+      max-width: 170px;
       white-space: nowrap !important;
+    }
+
+    /* Let ONLY the button wrap, even if the column is nowrap */
+    th:nth-child(6) .add-on-call-btn,
+    td:nth-child(6) .add-on-call-btn {
+      white-space: normal !important;
     }
 
     th.on-call-header {
@@ -506,6 +521,33 @@
 
 
 
+/* Desktop: compact stacked "Add / On Call / Hours" button */
+@media (min-width: 701px) {
+  .add-on-call-btn {
+    width: 120px;              /* adjust: 110-140px */
+    padding: 10px 12px;
+    white-space: normal !important;
+    word-break: break-word;
+    text-align: center;
+    line-height: 1.15;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;                  /* space between lines */
+
+    height: auto;              /* grow vertically as needed */
+    min-height: 44px;          /* keeps it button-ish */
+    margin: 0 auto;            /* centered in the cell */
+  }
+
+  /* Desktop: reduced padding for Date and On Call Hours columns */
+  th:nth-child(1), td:nth-child(1),
+  th:nth-child(6), td:nth-child(6) {
+    padding: 0.4rem 0.5rem !important;
+  }
+}
 
 
 
