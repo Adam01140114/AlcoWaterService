@@ -1255,7 +1255,8 @@ async function renderTimesheetForm(existingDraft) {
       const wdShort = cur.toLocaleDateString('en-US', { weekday: 'short' });
       const dtShort = cur.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
       const dateTd = document.createElement('td');
-      dateTd.innerHTML = `${wdShort}<br>(${dtShort})`;
+      dateTd.setAttribute('data-label', 'Date');
+      dateTd.innerHTML = `<div class="date-cell-inner">${wdShort}<br>(${dtShort})</div>`;
 
       const createTimeInput = (name, placeholderText) => {
           const wrapper = document.createElement('div');

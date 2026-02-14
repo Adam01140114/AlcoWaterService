@@ -450,7 +450,7 @@
       width: 95px !important;
       max-width: 120px;
       white-space: normal !important;
-      line-height: 1.2;
+      text-align: center;
     }
 
     th[data-label="On Call Hours"], td[data-label="On Call Hours"], th.on-call-hours, td.on-call-hours {
@@ -465,12 +465,6 @@
       width: 140px !important;
       max-width: 170px;
       white-space: nowrap !important;
-    }
-
-    /* Let ONLY the button wrap, even if the column is nowrap */
-    th:nth-child(6) .add-on-call-btn,
-    td:nth-child(6) .add-on-call-btn {
-      white-space: normal !important;
     }
 
     th.on-call-header {
@@ -547,6 +541,19 @@
   th:nth-child(6), td:nth-child(6) {
     padding: 0.4rem 0.5rem !important;
   }
+
+  /* Desktop: Job Description column – 25% wider */
+  th:nth-child(7), td:nth-child(7) {
+    min-width: 125px !important;
+    width: 138px !important;
+    max-width: 175px !important;
+  }
+
+  /* Let ONLY the button wrap on desktop, even if the column is nowrap */
+  th:nth-child(6) .add-on-call-btn,
+  td:nth-child(6) .add-on-call-btn {
+    white-space: normal !important;
+  }
 }
 
 
@@ -615,24 +622,23 @@
         font-size: 0.85rem;
         padding: 0.5rem;
       }
-      /* centre "Add On Call" no matter what */
-      .add-on-call-btn{
-        display:block;
-        margin:0.5rem auto;
-        width: 80%;
-        max-width: 80%;
+      /* "Add On Call Hours" – full width of cell so text fits on one line */
+      .add-on-call-btn {
+        display: block;
+        margin: 0.5rem auto;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 220px;
         box-sizing: border-box;
-        white-space: normal;
-        word-wrap: break-word;
+        white-space: nowrap !important;
         text-align: center;
-        transform: translateX(50%);
       }
 
       .add-on-call-btn.is-cancel {
-        width: 80%;
-        max-width: 80%;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 220px;
         margin: 0.5rem auto;
-        transform: translateX(50%);
       }
 
       .on-call-inputs-mobile {
@@ -643,14 +649,39 @@
         margin-left: 110px;
       }
 
+      /* Date cell: two-line date, centered in mobile (override 45% left padding) */
+      table td[data-label="Date"]:before {
+        display: none;
+      }
+      table td[data-label="Date"] {
+        padding: 0.5rem !important;
+        text-align: center !important;
+        display: block !important;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      table td[data-label="Date"] .date-cell-inner {
+        display: inline-block;
+        text-align: center;
+        margin: 0 auto;
+      }
+
+      /* Date cell much wider on mobile; On Call Hours wider */
+      table td[data-label="Date"] {
+        min-width: 360px;
+      }
+      table td[data-label="On Call Hours"] {
+        min-width: 280px;
+      }
+
       /* Hide "On Call Hours" text in mobile mode */
       table td[data-label="On Call Hours"]:before {
         display: none;
       }
 
-      /* Override padding for On Call Hours to center content */
+      /* Override padding for On Call Hours – shift content right by 25% */
       table td[data-label="On Call Hours"] {
-        padding-left: 0.4rem !important;
+        padding-left: 25% !important;
         padding-right: 0.4rem !important;
         overflow: visible !important;
       }
@@ -675,7 +706,7 @@
 
       /* Center On Call Hours cell content */
       table td[data-label="On Call Hours"] {
-        padding-left: 0.4rem !important;
+        padding-left: 25% !important;
         padding-right: 0.4rem !important;
         text-align: center;
         box-sizing: border-box;
