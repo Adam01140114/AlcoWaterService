@@ -467,6 +467,8 @@ function saveTimesheetDraft() {
   // Replace these with your own admin credentials as needed:
   const adminEmail = "admin@mydomain.com";
   const adminRealPassword = "alco1234";
+  /** Email address for timesheet notifications (submit, employee contest, etc.) */
+  const ADMIN_NOTIFY_EMAIL = "becky@alcowater.com";
   
   /*************************
    * Page Navigation / UI
@@ -1119,7 +1121,7 @@ await addDoc(collection(db, 'timesheets'), {
 
 // ---- EMAILJS: Send notification to admin ----
 const payPeriod = `${sv} to ${endIso}`;
-sendTimesheetSubmittedEmail(currentUserName, payPeriod, "becky@alcowater.com");
+sendTimesheetSubmittedEmail(currentUserName, payPeriod, ADMIN_NOTIFY_EMAIL);
 
 timesheetStartInput.value = "";
 timesheetFormDiv.innerHTML = "";
@@ -1943,12 +1945,17 @@ function buildTimesheetCard(ts, isContested) {
         adminEditComment: contestCommentBox.value.trim()
       });
       // Send contest email to admin (not user)
-      sendTimesheetContestedEmail({
-        toEmail: "becky@alcowater.com",
-        userName: ts.userName,
-        startDate: ts.startDate,
-        endDate: ts.endDate
-      });
+      try {
+        await sendTimesheetContestedEmail({
+          toEmail: ADMIN_NOTIFY_EMAIL,
+          userName: ts.userName,
+          startDate: ts.startDate,
+          endDate: ts.endDate
+        });
+        alert("Your update has been sent back. The administrator has been notified by email.");
+      } catch (e) {
+        alert("Timesheet saved, but the notification email failed. Please contact the office.");
+      }
       details.classList.add("hidden");
       viewBtn.textContent = "View";
       loadUserTimesheets();
@@ -2863,15 +2870,26 @@ function buildTimesheetTable(entries) {
               contested: true,
               adminEditComment: commentBox.value.trim()
             });
-            // Send contest email to the user who submitted the timesheet
-            const userEmail = ts.userEmail || ts.email || "becky@alcowater.com"; // Fallback to admin if user email not found
-            sendTimesheetContestedEmail({
-              toEmail: userEmail,
-              userName: ts.userName,
-              startDate: ts.startDate,
-              endDate: ts.endDate
-            });
-            alert(`Email has been sent to ${userEmail}`);
+            const userEmail = resolveTimesheetUserEmail(ts, timesheets);
+            if (!userEmail) {
+              alert(
+                "Timesheet was contested, but no employee email is on file for this record. Add userEmail by having them submit a new timesheet, or contact them manually."
+              );
+            } else {
+              try {
+                await sendTimesheetContestedEmail({
+                  toEmail: userEmail,
+                  userName: ts.userName,
+                  startDate: ts.startDate,
+                  endDate: ts.endDate
+                });
+                alert(`Email has been sent to ${userEmail}`);
+              } catch (e) {
+                alert(
+                  "Timesheet was contested, but the notification email could not be sent. Please contact the employee manually."
+                );
+              }
+            }
           } else {
             if (confirm("Approve this timesheet?")) {
               await updateDoc(doc(db, "timesheets", ts.id), {
@@ -3263,22 +3281,33 @@ function buildTimesheetTable(entries) {
   showUserLogin();
 
 // ---- EMAILJS: Send notification when a timesheet is contested ----
+function resolveTimesheetUserEmail(ts, siblingTimesheets = []) {
+  const pick = (v) => (v && String(v).trim()) || "";
+  if (pick(ts.userEmail)) return pick(ts.userEmail);
+  if (pick(ts.email)) return pick(ts.email);
+  for (const t of siblingTimesheets) {
+    if (t === ts) continue;
+    if (pick(t.userEmail)) return pick(t.userEmail);
+    if (pick(t.email)) return pick(t.email);
+  }
+  return null;
+}
+
 function sendTimesheetContestedEmail({
   toEmail,
   userName,
   startDate,
   endDate
 }) {
-  if (typeof emailjs === 'undefined') return;
-  emailjs.send("service_09kopw4", "template_ig6528q", {
+  if (typeof emailjs === "undefined") {
+    return Promise.reject(new Error("EmailJS not loaded"));
+  }
+  return emailjs.send("service_09kopw4", "template_ig6528q", {
     email: toEmail,
     user: userName,
     start_date: startDate,
     end_date: endDate,
     login_url: "https://alcowaterservice.com/timesheets/"
-  })
-  .then(function(response) {
-  }, function(error) {
   });
 }
 
