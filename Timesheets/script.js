@@ -1749,9 +1749,10 @@ return td;
 function getCombinedJobs() {
 // Combine default jobs + user custom jobs
 const defaultJobs = [
-  "Meter Reader","Pump Maintenance","Customer Service","Utilities Maintenance",
+  "Meter Reading","Pump Maintenance","Customer Service","Utilities Maintenance",
   "GIS/Mapping","Water Operator","Holiday","Paid Time Off",
-  "Hauling services","After Hours"
+  "Hauling services","After Hours","Shop Mechanic","Water Treatment Services",
+  "Water Distribution Services","Tank Maintenance"
 ];
 return [...defaultJobs, ...userCustomJobs].sort((a, b) => a.localeCompare(b));
 }
@@ -3195,9 +3196,10 @@ function buildTimesheetTable(entries) {
   
           // Combine default + user custom jobs for EasyFill
           const defaultJobs = [
-            "Meter Reader", "Pump Maintenance", "Customer Service", "Utilities Maintenance",
+            "Meter Reading", "Pump Maintenance", "Customer Service", "Utilities Maintenance",
             "GIS/Mapping", "Water Operator", "Holiday", "Paid Time Off",
-            "Hauling services", "After hours"
+            "Hauling services", "After hours", "Shop Mechanic", "Water Treatment Services",
+            "Water Distribution Services", "Tank Maintenance"
           ];
           const allJobs = [...defaultJobs, ...userCustomJobs];
           allJobs.sort((a, b) => a.localeCompare(b));
