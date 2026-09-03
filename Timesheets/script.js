@@ -1860,6 +1860,21 @@ const baseJobs = globalJobs.length ? globalJobs : DEFAULT_GLOBAL_JOBS;
 return [...baseJobs, ...userCustomJobs].sort((a, b) => a.localeCompare(b));
 }
 
+/**
+ * Job options for a row that already has a value saved.
+ * A job that has since been renamed or removed is kept in the list so the
+ * dropdown still shows it as selected - otherwise the row would open on
+ * "(Select a job)" and blur would overwrite the saved job with an empty value.
+ */
+function getJobsForValue(val) {
+const jobs = getCombinedJobs();
+if (val && !jobs.includes(val)) {
+  jobs.push(val);
+  jobs.sort((a, b) => a.localeCompare(b));
+}
+return jobs;
+}
+
   
   /*************************
    * Load user timesheets (Past)
@@ -2211,7 +2226,7 @@ function buildEditableTimesheetTable(entries, editedEntries, onEdit) {
     jobSpan.style.cursor = "pointer";
     jobSpan.ondblclick = function () {
       const select = document.createElement("select");
-      const jobs = getCombinedJobs();
+      const jobs = getJobsForValue(e.jobDescription);
       const emptyOpt = document.createElement("option");
       emptyOpt.value = "";
       emptyOpt.textContent = "(Select a job)";
@@ -2670,7 +2685,7 @@ function buildTimesheetTable(entries) {
           } else if (type === "select") {
             input = document.createElement("select");
   
-              const jobs = getCombinedJobs();
+              const jobs = getJobsForValue(val);
             const emptyOpt = document.createElement("option");
             emptyOpt.value = "";
             emptyOpt.textContent = "(Select a job)";
@@ -2791,7 +2806,7 @@ function buildTimesheetTable(entries) {
               input.value = val;
             } else if (type === 'select') {
               input = document.createElement('select');
-              const jobs = getCombinedJobs();
+              const jobs = getJobsForValue(val);
               jobs.forEach(j => {
                 const opt = document.createElement('option');
                 opt.value = j;
@@ -3298,7 +3313,7 @@ function buildTimesheetTable(entries) {
           const sel = document.createElement('select');
   
           // Combine admin-managed + user custom jobs for EasyFill
-          const allJobs = getCombinedJobs();
+          const allJobs = getJobsForValue(txt);
   
           // Empty option
           const eOpt = document.createElement('option');
