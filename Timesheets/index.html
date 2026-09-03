@@ -446,6 +446,34 @@
       transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
+
+    /* The admin list is long, so lay it out three across instead of one.
+       The per-user list below stays a single column - it is usually short. */
+    #admin-jobs-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 860px;
+      margin: 1rem auto 0;
+    }
+    #admin-jobs-list li {
+      margin: 0;
+      gap: 0.5rem;
+    }
+    #admin-jobs-list li span.job-text {
+      overflow-wrap: anywhere;
+    }
+    #admin-jobs-list li button.delete-job {
+      margin-left: 0;
+      flex-shrink: 0;
+    }
+    @media (max-width: 900px) {
+      #admin-jobs-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 700px) {
+      #admin-jobs-list { grid-template-columns: 1fr; }
+    }
     
   
     
