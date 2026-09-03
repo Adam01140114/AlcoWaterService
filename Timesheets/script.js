@@ -2049,10 +2049,28 @@ return jobs;
   if (normalArr.length === 0) {
       pastTimesheetsDiv.textContent = "You currently have no timesheets.";
   } else {
-    normalArr.forEach((ts) => {
-      pastTimesheetsDiv.appendChild(buildTimesheetCard(ts, false));
+    normalArr.forEach((ts, i) => {
+      const card = buildTimesheetCard(ts, false);
+      // Only the three most recent up front; the rest sit behind the button
+      if (i >= 3) card.classList.add("extra-timesheet");
+      pastTimesheetsDiv.appendChild(card);
     });
+
+    if (normalArr.length > 3) {
+      const viewAll = document.createElement("button");
+      viewAll.textContent = `View All Timesheets (${normalArr.length})`;
+      viewAll.style.display = "block";
+      viewAll.style.margin = "1rem auto 0 auto";
+      viewAll.onclick = () => {
+        pastTimesheetsDiv
+          .querySelectorAll(".timesheet-item.extra-timesheet")
+          .forEach(el => el.classList.remove("extra-timesheet"));
+        viewAll.remove();
+      };
+      pastTimesheetsDiv.appendChild(viewAll);
+    }
   }
+  // Contested timesheets are left alone - they need attention, not hiding.
 }
 
 /* helper that returns the DOM node for a single timesheet
