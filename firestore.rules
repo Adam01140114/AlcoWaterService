@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // The timesheet portal signs the admin in as this single shared account.
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'admin@mydomain.com';
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // Name, email and work schedule. Only ever read or written by the owner.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // Per-user Easy Fill defaults.
+    match /easyfillsettings/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // Per-user extra job names, on top of the shared list.
+    match /customjobs/{uid} {
+      allow read, write: if isOwner(uid);
+    }
+
+    // The shared job dropdown. Every signed-in user reads it; only the admin
+    // edits it from the Job Descriptions panel on the admin dashboard.
+    match /globaljobs/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // An employee sees and edits their own timesheets; the admin sees all of
+    // them (loadAdminData reads the whole collection to build its tables).
+    match /timesheets/{sheetId} {
+      allow read:   if isAdmin() || isOwner(resource.data.userId);
+      allow create: if isAdmin() || isOwner(request.resource.data.userId);
+      allow update, delete: if isAdmin() || isOwner(resource.data.userId);
+    }
+  }
+}
