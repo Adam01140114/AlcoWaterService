@@ -457,12 +457,16 @@ function saveTimesheetDraft() {
   const customJobInput      = document.getElementById('custom-job-input');
   const addCustomJobBtn     = document.getElementById('add-custom-job-btn');
   const customJobsList      = document.getElementById('custom-jobs-list');
+  const adminJobInput       = document.getElementById('admin-job-input');
+  const addAdminJobBtn      = document.getElementById('add-admin-job-btn');
+  const adminJobsList       = document.getElementById('admin-jobs-list');
   
   let currentUser = null;
   let isAdmin = false;
   let currentUserName = "";
   let userEasyFillSettings = {};
   let userCustomJobs = []; // Array of user-defined jobs
+  let globalJobs = [];     // Admin-managed jobs offered to every user
   
   // Replace these with your own admin credentials as needed:
   const adminEmail = "admin@mydomain.com";
@@ -535,6 +539,7 @@ workSchedule = selectedSchedule;
       currentUser = cred.user;
       isAdmin = false;
       await fetchUserName();
+      await loadGlobalJobs();
       await loadUserEasyFillSettings();
       await loadUserCustomJobs();
       loadUserTimesheets();
@@ -580,6 +585,7 @@ workSchedule = selectedSchedule;
       // Create empty custom jobs doc
       await setDoc(doc(db, 'customjobs', uid), { jobs: [] });
   
+      await loadGlobalJobs();
       await loadUserEasyFillSettings();
       await loadUserCustomJobs();
       loadUserTimesheets();
@@ -599,6 +605,7 @@ workSchedule = selectedSchedule;
         isAdmin = true;
         showAdminDashboard();
         loadAdminData();
+        await loadGlobalJobs();
       } catch (e) {
         alert(e.message);
       }
@@ -651,12 +658,15 @@ if (!user) {
 
 if (user.email === adminEmail) {
   isAdmin = true;
+  currentUser = user;
   showAdminDashboard();
   loadAdminData();
+  await loadGlobalJobs();
 } else {
   isAdmin = false;
   currentUser = user;
   await fetchUserName();
+  await loadGlobalJobs();
   await loadUserEasyFillSettings();
   await loadUserCustomJobs();
   userNameDisplay.textContent = currentUserName;
@@ -819,6 +829,104 @@ loadUserWorkSchedule();
     customJobInput.value = "";
     renderCustomJobsList();
   });
+
+  /*************************
+   * Global job descriptions (admin-managed)
+   *************************/
+
+  // Seed list, used only the first time the shared doc is created.
+  const DEFAULT_GLOBAL_JOBS = [
+    "Meter Reading", "Pump Maintenance", "Customer Service", "Utilities Maintenance",
+    "GIS/Mapping", "Water Operator", "Holiday", "Paid Time Off",
+    "Hauling services", "After Hours", "Shop Mechanic", "Water Treatment Services",
+    "Water Distribution Services", "Tank Maintenance"
+  ];
+
+  /** Load the shared job list every user picks from */
+  async function loadGlobalJobs() {
+    const ref = doc(db, 'globaljobs', 'list');
+    try {
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        globalJobs = snap.data().jobs || [];
+      } else {
+        globalJobs = [...DEFAULT_GLOBAL_JOBS];
+        if (isAdmin) await setDoc(ref, { jobs: globalJobs });
+      }
+    } catch (e) {
+      // Never block the dashboard on this - fall back to the built-in list
+      console.error("Could not load global jobs:", e);
+      globalJobs = [...DEFAULT_GLOBAL_JOBS];
+    }
+    if (isAdmin) renderAdminJobsList();
+  }
+
+  /** Persist the shared job list (admin only) */
+  async function saveGlobalJobs() {
+    await setDoc(doc(db, 'globaljobs', 'list'), { jobs: globalJobs });
+  }
+
+  /** Admin list of global jobs, with delete and inline-edit */
+  function renderAdminJobsList() {
+    if (!adminJobsList) return;
+    adminJobsList.innerHTML = "";
+    globalJobs.forEach((job, index) => {
+      const li = document.createElement('li');
+      const span = document.createElement('span');
+      span.classList.add('job-text');
+      span.textContent = job;
+      // Double-click to edit
+      span.addEventListener('dblclick', () => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = job;
+        input.style.width = "100%";
+        input.addEventListener('blur', async () => {
+          const newVal = input.value.trim();
+          if (newVal && newVal !== job) {
+            globalJobs[index] = newVal;
+            await saveGlobalJobs();
+          }
+          renderAdminJobsList();
+        });
+        li.replaceChild(input, span);
+        input.focus();
+      });
+
+      li.appendChild(span);
+      const delBtn = document.createElement('button');
+      delBtn.classList.add('delete-job');
+      delBtn.textContent = "Delete";
+      delBtn.addEventListener('click', async () => {
+        if (confirm(`Remove "${job}" from the job dropdown for all users?`)) {
+          globalJobs.splice(index, 1);
+          await saveGlobalJobs();
+          renderAdminJobsList();
+        }
+      });
+      li.appendChild(delBtn);
+      adminJobsList.appendChild(li);
+    });
+  }
+
+  /** Add a global job */
+  if (addAdminJobBtn) {
+    addAdminJobBtn.addEventListener('click', async () => {
+      const newJob = adminJobInput.value.trim();
+      if (!newJob) {
+        alert("Enter a job name first.");
+        return;
+      }
+      if (globalJobs.some(j => j.toLowerCase() === newJob.toLowerCase())) {
+        alert("That job is already in the list.");
+        return;
+      }
+      globalJobs.push(newJob);
+      await saveGlobalJobs();
+      adminJobInput.value = "";
+      renderAdminJobsList();
+    });
+  }
   
   /*************************
    * Timesheet creation
@@ -1747,14 +1855,9 @@ return td;
 }
 
 function getCombinedJobs() {
-// Combine default jobs + user custom jobs
-const defaultJobs = [
-  "Meter Reading","Pump Maintenance","Customer Service","Utilities Maintenance",
-  "GIS/Mapping","Water Operator","Holiday","Paid Time Off",
-  "Hauling services","After Hours","Shop Mechanic","Water Treatment Services",
-  "Water Distribution Services","Tank Maintenance"
-];
-return [...defaultJobs, ...userCustomJobs].sort((a, b) => a.localeCompare(b));
+// Combine the admin-managed job list + this user's custom jobs
+const baseJobs = globalJobs.length ? globalJobs : DEFAULT_GLOBAL_JOBS;
+return [...baseJobs, ...userCustomJobs].sort((a, b) => a.localeCompare(b));
 }
 
   
@@ -3194,15 +3297,8 @@ function buildTimesheetTable(entries) {
           cell.textContent = "";
           const sel = document.createElement('select');
   
-          // Combine default + user custom jobs for EasyFill
-          const defaultJobs = [
-            "Meter Reading", "Pump Maintenance", "Customer Service", "Utilities Maintenance",
-            "GIS/Mapping", "Water Operator", "Holiday", "Paid Time Off",
-            "Hauling services", "After hours", "Shop Mechanic", "Water Treatment Services",
-            "Water Distribution Services", "Tank Maintenance"
-          ];
-          const allJobs = [...defaultJobs, ...userCustomJobs];
-          allJobs.sort((a, b) => a.localeCompare(b));
+          // Combine admin-managed + user custom jobs for EasyFill
+          const allJobs = getCombinedJobs();
   
           // Empty option
           const eOpt = document.createElement('option');
