@@ -16,19 +16,23 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == uid;
     }
 
-    // Name, email and work schedule. Only ever read or written by the owner.
+    // Name, email and work schedule. Only ever read or written by the owner,
+    // but the admin can delete it when removing an employee.
     match /users/{uid} {
       allow read, write: if isOwner(uid);
+      allow delete: if isAdmin();
     }
 
     // Per-user Easy Fill defaults.
     match /easyfillsettings/{uid} {
       allow read, write: if isOwner(uid);
+      allow delete: if isAdmin();
     }
 
     // Per-user extra job names, on top of the shared list.
     match /customjobs/{uid} {
       allow read, write: if isOwner(uid);
+      allow delete: if isAdmin();
     }
 
     // The shared job dropdown. Every signed-in user reads it; only the admin

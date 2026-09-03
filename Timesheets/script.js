@@ -378,6 +378,7 @@ function saveTimesheetDraft() {
     where,
     serverTimestamp,
     updateDoc,
+    deleteDoc,
     deleteField
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
   
@@ -829,6 +830,93 @@ loadUserWorkSchedule();
     customJobInput.value = "";
     renderCustomJobsList();
   });
+
+  /*************************
+   * Confirmation dialog
+   *************************/
+  const confirmOverlay   = document.getElementById('confirm-overlay');
+  const confirmTitleEl   = document.getElementById('confirm-title');
+  const confirmMessageEl = document.getElementById('confirm-message');
+  const confirmOkBtn     = document.getElementById('confirm-ok-btn');
+  const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+
+  /**
+   * Stand-in for window.confirm, so a destructive action can spell out what it
+   * is about to remove. Resolves true only if the confirm button is pressed;
+   * Escape, Cancel and a click on the backdrop all resolve false.
+   */
+  function askConfirm({ title, message, confirmText = "Delete" }) {
+    return new Promise(resolve => {
+      confirmTitleEl.textContent = title;
+      confirmMessageEl.textContent = message;
+      confirmOkBtn.textContent = confirmText;
+      confirmOverlay.classList.remove('hidden');
+
+      const close = (result) => {
+        confirmOverlay.classList.add('hidden');
+        confirmOkBtn.onclick = null;
+        confirmCancelBtn.onclick = null;
+        confirmOverlay.onclick = null;
+        document.removeEventListener('keydown', onKey);
+        resolve(result);
+      };
+      const onKey = (ev) => { if (ev.key === "Escape") close(false); };
+
+      confirmOkBtn.onclick = () => close(true);
+      confirmCancelBtn.onclick = () => close(false);
+      confirmOverlay.onclick = (ev) => { if (ev.target === confirmOverlay) close(false); };
+      document.addEventListener('keydown', onKey);
+      confirmCancelBtn.focus();
+    });
+  }
+
+  /**
+   * Remove an employee's data: every timesheet of theirs, plus their profile,
+   * custom jobs and Easy Fill settings. Returns how many timesheets went.
+   *
+   * Their Firebase Auth login is NOT removed - the browser SDK can only delete
+   * the account it is signed in as, so deleting someone else needs the Admin
+   * SDK. Remove the account under Authentication in the Firebase console.
+   */
+  async function deleteEmployeeData(uid) {
+    const snap = await getDocs(
+      query(collection(db, 'timesheets'), where('userId', '==', uid))
+    );
+    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'timesheets', d.id))));
+    await Promise.all([
+      deleteDoc(doc(db, 'users', uid)),
+      deleteDoc(doc(db, 'customjobs', uid)),
+      deleteDoc(doc(db, 'easyfillsettings', uid))
+    ]);
+    return snap.size;
+  }
+
+  /** The "Delete Employee" action shown beside "View Timesheets" */
+  function createDeleteEmployeeBtn(uid, userName) {
+    const btn = document.createElement('button');
+    btn.textContent = "Delete Employee";
+    btn.classList.add('delete-employee-btn');
+    btn.addEventListener('click', async () => {
+      const ok = await askConfirm({
+        title: `Delete ${userName}?`,
+        message: `Deleting ${userName} removes their account data and every `
+               + `timesheet associated with it, including approved ones. `
+               + `This cannot be undone. Are you sure you want to continue?`,
+        confirmText: "Delete Employee"
+      });
+      if (!ok) return;
+      btn.disabled = true;
+      try {
+        const removed = await deleteEmployeeData(uid);
+        alert(`${userName} was deleted, along with ${removed} timesheet${removed === 1 ? "" : "s"}.`);
+        loadAdminData();
+      } catch (e) {
+        alert("Could not delete this employee: " + e.message);
+        btn.disabled = false;
+      }
+    });
+    return btn;
+  }
 
   /*************************
    * Global job descriptions (admin-managed)
@@ -2494,6 +2582,7 @@ function buildTimesheetTable(entries) {
           );
         });
         actionTd.appendChild(vBtn);
+        actionTd.appendChild(createDeleteEmployeeBtn(uid, userName));
         tr.appendChild(actionTd);
         newTbody.appendChild(tr);
       });
@@ -2548,6 +2637,7 @@ function buildTimesheetTable(entries) {
           );
         });
         actionTd.appendChild(vBtn);
+        actionTd.appendChild(createDeleteEmployeeBtn(uid, userName));
         tr.appendChild(actionTd);
         newTbody.appendChild(tr);
       });
@@ -2610,9 +2700,11 @@ function buildTimesheetTable(entries) {
 
     timesheets.sort((a, b) => b.startDate.localeCompare(a.startDate));
   
-    timesheets.forEach(ts => {
+    timesheets.forEach((ts, tsIndex) => {
       const card = document.createElement("div");
       card.classList.add("timesheet-item");
+      // Some employees have dozens; show the three most recent up front
+      if (tsIndex >= 3) card.classList.add("extra-timesheet");
 
       /* ---------- header ---------- */
       const header = document.createElement("div");
@@ -3053,13 +3145,21 @@ function buildTimesheetTable(entries) {
       containerEl.appendChild(card);
     });
   
-    /* back button */
-    const back = document.createElement("button");
-    back.textContent = "Back";
-    back.style.display = "block";
-    back.style.margin = "1rem auto 0 auto";
-    back.onclick = goBack;
-    containerEl.appendChild(back);
+    /* Reveal the timesheets held back above. Once they are all visible the
+       button has nothing left to do, so it removes itself. Leaving the view
+       is the "Back to Employee View" button at the top. */
+    const heldBack = Array.from(containerEl.querySelectorAll(".timesheet-item.extra-timesheet"));
+    if (heldBack.length) {
+      const showAll = document.createElement("button");
+      showAll.textContent = `Show all timesheets (${timesheets.length})`;
+      showAll.style.display = "block";
+      showAll.style.margin = "1rem auto 0 auto";
+      showAll.onclick = () => {
+        heldBack.forEach(el => el.classList.remove("extra-timesheet"));
+        showAll.remove();
+      };
+      containerEl.appendChild(showAll);
+    }
   }
   
   

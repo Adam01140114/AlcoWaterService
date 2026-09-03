@@ -316,6 +316,78 @@
       margin: 0 0 1rem 0;
     }
 
+    /* Timesheets held back behind "Show all timesheets" */
+    .timesheet-item.extra-timesheet {
+      display: none;
+    }
+
+    /* Divider between admin dashboard sections */
+    #admin-dashboard .admin-section-divider {
+      border: 0;
+      border-top: 1px solid #e0e0e0;
+      margin: 3rem 0 2rem;
+    }
+
+    /* Second action in the admin employee tables */
+    .delete-employee-btn {
+      background: #c62828;
+      margin-left: 0.5rem;
+    }
+    .delete-employee-btn:hover {
+      background: #b71c1c;
+    }
+
+    /* Confirmation dialog */
+    #confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 11000;
+      padding: 1rem;
+    }
+    #confirm-overlay.hidden {
+      display: none;
+    }
+    #confirm-box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      text-align: left;
+    }
+    #confirm-box h3 {
+      margin: 0 0 0.75rem;
+      color: #333;
+    }
+    #confirm-box p {
+      margin: 0 0 1.5rem;
+      color: #444;
+      line-height: 1.5;
+    }
+    #confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+    #confirm-cancel-btn {
+      background: #e0e0e0;
+      color: #333;
+    }
+    #confirm-cancel-btn:hover {
+      background: #d5d5d5;
+    }
+    #confirm-ok-btn {
+      background: #c62828;
+    }
+    #confirm-ok-btn:hover {
+      background: #b71c1c;
+    }
+
     /* Approved Timesheets */
     #admin-approved-wrapper {
       margin-top: 2rem; 
@@ -451,6 +523,12 @@
       background: #1565c0;
       transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+
+    /* Keep the Add Job row clear of the list below it. This has to sit after
+       the shared .custom-jobs-input-container rule to win on source order. */
+    #admin-jobs-container > div.custom-jobs-input-container {
+      margin-bottom: 2rem;
     }
 
     /* The admin list is long, so lay it out three across instead of one.
@@ -951,13 +1029,13 @@
       <div class="table-wrapper" id="admin-users-wrapper">
         <!-- Pending table inserted dynamically -->
       </div>
-      <br><br><br>
+      <hr class="admin-section-divider">
       <h3>Approved Timesheets</h3>
       <div class="table-wrapper" id="admin-approved-wrapper">
         <!-- Approved table inserted dynamically -->
       </div>
       <div class="container hidden" id="admin-approved-view-container"></div>
-      <br><br><br>
+      <hr class="admin-section-divider">
       <h3>Job Descriptions</h3>
       <p style="text-align:center; color:#666;">
         These are the jobs every user can choose from in the timesheet dropdown.
@@ -972,6 +1050,18 @@
       </div>
       <div class="logout-btn-container">
         <button id="admin-logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <!-- CONFIRMATION DIALOG -->
+    <div id="confirm-overlay" class="hidden">
+      <div id="confirm-box" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <h3 id="confirm-title"></h3>
+        <p id="confirm-message"></p>
+        <div id="confirm-actions">
+          <button id="confirm-cancel-btn">Cancel</button>
+          <button id="confirm-ok-btn">Delete</button>
+        </div>
       </div>
     </div>
 
