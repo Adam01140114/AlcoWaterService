@@ -378,7 +378,6 @@ function saveTimesheetDraft() {
     where,
     serverTimestamp,
     updateDoc,
-    deleteDoc,
     deleteField
   } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
   
@@ -870,24 +869,40 @@ loadUserWorkSchedule();
     });
   }
 
+  /** Three years out - California's payroll record retention period. */
+  function retentionCutoff() {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 3);
+    return d.toISOString().slice(0, 10);
+  }
+
   /**
-   * Remove an employee's data: every timesheet of theirs, plus their profile,
-   * custom jobs and Easy Fill settings. Returns how many timesheets went.
+   * Soft delete an employee. Nothing is destroyed: their timesheets are
+   * flagged adminDeleted, which loadAdminData already skips, so they drop out
+   * of both admin tables while the records stay in Firestore for the
+   * three-year retention period. Returns how many timesheets were hidden.
    *
    * Their Firebase Auth login is NOT removed - the browser SDK can only delete
-   * the account it is signed in as, so deleting someone else needs the Admin
+   * the account it is signed in as, so removing someone else needs the Admin
    * SDK. Remove the account under Authentication in the Firebase console.
    */
-  async function deleteEmployeeData(uid) {
+  async function softDeleteEmployee(uid) {
+    const retainUntil = retentionCutoff();
     const snap = await getDocs(
       query(collection(db, 'timesheets'), where('userId', '==', uid))
     );
-    await Promise.all(snap.docs.map(d => deleteDoc(doc(db, 'timesheets', d.id))));
-    await Promise.all([
-      deleteDoc(doc(db, 'users', uid)),
-      deleteDoc(doc(db, 'customjobs', uid)),
-      deleteDoc(doc(db, 'easyfillsettings', uid))
-    ]);
+    await Promise.all(snap.docs.map(d => updateDoc(doc(db, 'timesheets', d.id), {
+      adminDeleted: true,
+      deletedAt: serverTimestamp(),
+      retainUntil
+    })));
+    // Recorded on the profile too, so the retention date is discoverable
+    // without reading through every timesheet.
+    await updateDoc(doc(db, 'users', uid), {
+      deleted: true,
+      deletedAt: serverTimestamp(),
+      retainUntil
+    });
     return snap.size;
   }
 
@@ -899,16 +914,19 @@ loadUserWorkSchedule();
     btn.addEventListener('click', async () => {
       const ok = await askConfirm({
         title: `Delete ${userName}?`,
-        message: `Deleting ${userName} removes their account data and every `
-               + `timesheet associated with it, including approved ones. `
-               + `This cannot be undone. Are you sure you want to continue?`,
+        message: `This removes ${userName} and all of their timesheets from the `
+               + `portal, including approved ones. Copies are retained until `
+               + `${retentionCutoff()} - three years - in accordance with `
+               + `California payroll record retention law, and stay hidden from `
+               + `the app for that time. Are you sure you want to continue?`,
         confirmText: "Delete Employee"
       });
       if (!ok) return;
       btn.disabled = true;
       try {
-        const removed = await deleteEmployeeData(uid);
-        alert(`${userName} was deleted, along with ${removed} timesheet${removed === 1 ? "" : "s"}.`);
+        const hidden = await softDeleteEmployee(uid);
+        alert(`${userName} and ${hidden} timesheet${hidden === 1 ? "" : "s"} were removed from the portal. `
+            + `Copies are retained until ${retentionCutoff()}.`);
         loadAdminData();
       } catch (e) {
         alert("Could not delete this employee: " + e.message);
