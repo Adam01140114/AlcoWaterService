@@ -2587,7 +2587,27 @@ function buildTimesheetTable(entries) {
   function showAdminUserTimesheets(uid, userName, timesheets, isApprovedSection, containerEl) {
     containerEl.innerHTML = "";
     containerEl.classList.remove("hidden");
-  
+
+    /* Leaving this view puts the employee table back */
+    const goBack = () => {
+      containerEl.classList.add("hidden");
+      containerEl.innerHTML = "";
+      adminLogoutBtn.classList.remove("hidden");
+      if (isApprovedSection) {
+        adminApprovedWrapper.classList.remove("hidden");
+      } else {
+        adminUsersWrapper.classList.remove("hidden");
+      }
+    };
+
+    /* Back button above the list too, so leaving does not mean scrolling
+       past every one of the employee's timesheets first */
+    const topBack = document.createElement("button");
+    topBack.textContent = "\u2190 Back to Employee View";
+    topBack.classList.add("back-to-employees");
+    topBack.onclick = goBack;
+    containerEl.appendChild(topBack);
+
     timesheets.sort((a, b) => b.startDate.localeCompare(a.startDate));
   
     timesheets.forEach(ts => {
@@ -3038,16 +3058,7 @@ function buildTimesheetTable(entries) {
     back.textContent = "Back";
     back.style.display = "block";
     back.style.margin = "1rem auto 0 auto";
-    back.onclick = () => {
-      containerEl.classList.add("hidden");
-      containerEl.innerHTML = "";
-      adminLogoutBtn.classList.remove("hidden");
-      if (isApprovedSection) {
-        adminApprovedWrapper.classList.remove("hidden");
-      } else {
-        adminUsersWrapper.classList.remove("hidden");
-      }
-    };
+    back.onclick = goBack;
     containerEl.appendChild(back);
   }
   

@@ -310,6 +310,12 @@
       font-weight: bold; 
     }
 
+    /* Back button above the admin timesheet list */
+    .back-to-employees {
+      display: block;
+      margin: 0 0 1rem 0;
+    }
+
     /* Approved Timesheets */
     #admin-approved-wrapper {
       margin-top: 2rem; 
@@ -586,6 +592,28 @@
   th:nth-child(6) .add-on-call-btn,
   td:nth-child(6) .add-on-call-btn {
     white-space: normal !important;
+  }
+
+  /* The nth-child(1) rule above sizes the timesheet Date column, but it is
+     unscoped and was also squeezing Employee Name to 95px and wrapping it.
+     Undo it for the admin tables and let the name take the space it needs. */
+  #admin-users-table th:nth-child(1),
+  #admin-users-table td:nth-child(1),
+  #admin-approved-table th:nth-child(1),
+  #admin-approved-table td:nth-child(1) {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+  }
+
+  /* Action only has to fit its button; width:1% hands the rest to the name. */
+  #admin-users-table th:last-child,
+  #admin-users-table td:last-child,
+  #admin-approved-table th:last-child,
+  #admin-approved-table td:last-child {
+    width: 1% !important;
+    white-space: nowrap !important;
   }
 }
 
