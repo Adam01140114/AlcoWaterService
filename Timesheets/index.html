@@ -376,30 +376,35 @@
     }
 
     /* Custom Jobs Section */
-    #custom-jobs-container {
+    #custom-jobs-container,
+    #admin-jobs-container {
       margin-top: 2rem;
       border-top: 1px solid #e0e0e0;
       padding-top: 1.5rem;
       text-align: center;
     }
     /* Wrap the input + button so the list is definitely below them */
-    #custom-jobs-container > div.custom-jobs-input-container {
+    #custom-jobs-container > div.custom-jobs-input-container,
+    #admin-jobs-container > div.custom-jobs-input-container {
       margin-bottom: 1rem;
     }
-    #custom-job-input {
+    #custom-job-input,
+    #admin-job-input {
       width: 300px;
       padding: 0.5rem;
       font-size: 1rem;
       margin-right: 0.5rem; /* small space between input and button */
     }
-    #custom-jobs-list {
+    #custom-jobs-list,
+    #admin-jobs-list {
       margin-top: 1rem;
       list-style-type: none;
       padding: 0;
       display: inline-block;
       text-align: left;
     }
-    #custom-jobs-list li {
+    #custom-jobs-list li,
+    #admin-jobs-list li {
       margin: 0.3rem 0;
       /* Increase horizontal padding for spacing between text and button */
       padding: 0.5rem 1rem;
@@ -411,16 +416,19 @@
       background: #fafafa;
       transition: all 0.3s ease;
     }
-    #custom-jobs-list li:hover {
+    #custom-jobs-list li:hover,
+    #admin-jobs-list li:hover {
       background: #f5f5f5;
       border-color: #ccc;
     }
-    #custom-jobs-list li span.job-text {
+    #custom-jobs-list li span.job-text,
+    #admin-jobs-list li span.job-text {
       cursor: pointer;
       color: #333;
       font-weight: 500;
     }
-    #custom-jobs-list li button.delete-job {
+    #custom-jobs-list li button.delete-job,
+    #admin-jobs-list li button.delete-job {
       background: #1976d2;
       border: none;
       color: #fff;
@@ -432,7 +440,8 @@
       transition: all 0.3s ease;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    #custom-jobs-list li button.delete-job:hover {
+    #custom-jobs-list li button.delete-job:hover,
+    #admin-jobs-list li button.delete-job:hover {
       background: #1565c0;
       transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0,0,0,0.15);
@@ -476,14 +485,10 @@
     /* Gear button styling */
     #gear-button {
       background: #1976d2;
-      font-size: 1.2rem;
-      padding: 0.6rem 1rem;
-      border-radius: 50%;
-      width: 45px;
-      height: 45px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 0.4rem;
     }
 
     /* Work schedule select styling */
@@ -877,7 +882,7 @@
       <h3>Past Timesheets</h3>
       <div id="past-timesheets"></div>
       <div class="logout-btn-container">
-        <button id="gear-button">⚙</button>
+        <button id="gear-button">Settings ⚙</button>
         <button id="logout-btn">Logout</button>
       </div>
     </div>
@@ -896,6 +901,19 @@
         <!-- Approved table inserted dynamically -->
       </div>
       <div class="container hidden" id="admin-approved-view-container"></div>
+      <br><br><br>
+      <h3>Job Descriptions</h3>
+      <p style="text-align:center; color:#666;">
+        These are the jobs every user can choose from in the timesheet dropdown.
+        Double-click a job to rename it.
+      </p>
+      <div id="admin-jobs-container">
+        <div class="custom-jobs-input-container">
+          <input type="text" id="admin-job-input" placeholder="Enter a new job name">
+          <button id="add-admin-job-btn">Add Job</button>
+        </div>
+        <ul id="admin-jobs-list"></ul>
+      </div>
       <div class="logout-btn-container">
         <button id="admin-logout-btn">Logout</button>
       </div>
